@@ -1,105 +1,41 @@
+<identifier>     = [a-zA-Z_][a-zA-Z0-9_]*
 <literal-int>    = [0-9]+
 <literal-float>  = [0-9]+ "." [0-9]+
+<literal-char>   = "'" [^\'"'] "'"
+<literal-string> = '"' [^'"'\\]* '"'
 <literal-bool>   = "true" | "false"
-<literal-char>   = "'" . "'" 
-<literal-string> = '"' .* '"'
 
-<literal-value> = <literal-int>
-    | <literal-float>
-    | <literal-bool>
-    | <literal-char>
-    | <literal-string>
-    | <struct-instance>
+<type-native>    = "i8" | "i16" | "i32" | "i64" | "f32" | "f64" | "str" | "bool"
+<type-void>      = "void"
 
-<type-native> = "i8" | "i16" | "i32" | "i64" | "ui8" | "ui16" | "ui32" | "ui64" | "f32" | "f64" | "bool" | "string" | "void"
+<program>          = <module-decl> <module-statement>*
+<module-decl>      = "module" <identifier> ( "::" <identifier> )* ";"
+<module-statement> = <const-decl> | <func-decl>
 
-<identifier>  = [a-zA-Z_][a-zA-Z0-9_]*
+<statement>      = <statement> = <var-decl> | <assign-stmt> | <call-stmt> | <return-stmt>
+<assign-stmt>    = <identifier> "=" <expression> ";"
+<call-stmt>      = <func-call> ";"
 
-<type-array> = <type-identifier> "[" <literal-int> "]"
+<var-decl>       = "var" <identifier> ":" <type-native> "=" <expression> ";"
+<const-decl>     = [ "pub" ] "const" <identifier> ":" <type-native> "=" <expression> ";"
 
-<type-list>   = <type-identifier> ( "," <type-identifier> )*
+<func-decl>      = [ "pub" ] "fun" <identifier> "(" [ <parameter-list> ] ")" "->" ( <type-native> | <type-void> ) ":" <statement>* "end"
+<func-call>      = <identifier> "(" [ <arg-list> ] ")"
+<arg-list>       = <expression> ( "," <expression> )*
 
-<call-function> = <identifier> [ <generic-args> ] "(" [ <argument-list> ] ")"
-
-<unary-op> = "!" | "~"
-
-<cast> = 'as' <type-identifier>
-
-<bin-op> = <expression> "+" | "-" | "*" | "/" | "||" | "&&" | "!" | "==" | "!=" | ">" | "<" | ">=" | "<=" | "|" | "&" | "^" | "<<" | ">>" | "~" <expression>
-
-<op-assignment> = "=" | "+=" | "-=" | "*=" | "/=" 
-
-<assignment-stmt> = <identifier> <op-assignment> <expression> ';'
-
-<argument-list> = <expression> ("," <expression>)*
-
-<condition-stmt> = 'if' '(' <expression> ')' <block> 
-                    ( 'elif' '(' <expression> ')' <block> )* [ 'else' <block> ] 
-                    'end'
-
-<interator> = 'in' | 'of' | 'at'
-
-<enum-item>        = <identifier> [ "=" <literal-int> ]
-<enum-item-list>   = <enum-item> ( "," <enum-item> )*
-
-<enum-block-scope> = ":" <enum-item-list> "end"
-
-<enum-declaration> = [ <access-modifier> ] "enum" <identifier> <enum-block-scope>
-
-<loop-block-scope> = ':' (<statement> | 'break' ';' | 'continue' ';')* 'end'
-
-<for-stmt> = 'for' '(' <constant-declaration> <interator> <type-identifier>* ')' 
-
-<while-stmt> = 'while' '(' <expression> ')'
-
-<loop-declaration> = (<for-stmt> | <while-stmt>) <loop-block-scope>
-
-<return-stmt> = 'return' ( <expression> ) ';'
-
-<statement> = <data-declaration> | <assignment-stmt> | <call-function> ";" | <condition-stmt> | <loop-declaration> | <return-stmt> | <enum-declaration>
-
-<block-scope> = ':' <statement>* 'end'
-
-<expression> = ('(' <expression> ')' | <literal-value> | <call-function> | <identifier> ) [ <cast> ] | <anonimous-function> | <bin-op>
-
-<variable-declaration> = 'var' <identifier> ':' <type-identifier>
-<constant-declaration> = 'const' <identifier> ':' <type-identifier>
-
-<access-modifier> = 'internal'
-
-<data-declaration> = [ <access-modifier> ] (<variable-declaration> | <constant-declaration>) [ '=' <expression> ] ';'
-
-<generic-param> = "<" <identifier> ( "," <identifier> )* ">"
-
-<generic-args>   = "<" <type-identifier> ( "," <type-identifier> )* ">"
-
-<struct-value-assignment> = [ <access-modifier> ] <identifier> ':' <literal-value>
-
-<struct-value-assign-list> = <struct-value-assignment> [',' <struct-value-assignment>]*
-
-<struct-instance> = <identifier> '{' <struct-value-assign-list> '}'
-
-<struct-block-scope> = ':' <data-declaration> 'end'
-
-<struct-inherit> = ['!'] <identifier>
-
-<struct-declaration> = [ <access-modifier> ] 'struct' <identifier> [ <generic-param> ] [ 'extends' <struct-inherit> (',' <struct-inherit>)* ] <struct-block-scope>
-
-<parameter>      = (<constant-declaration> | <variable-declaration>) [ "=" <literal-value> ]
+<parameter>      = <identifier> ":" <type-native>
 <parameter-list> = <parameter> ( "," <parameter> )*
 
-<type-identifier> = ( <type-native> | <identifier> ) [ <generic-args> ] | <type-function> | <type-array>
+<return-stmt>    = "return" [ <expression> ] ";"
 
-<type-function> = 'fun' '(' [ <type-list> ] ')' '->' <type-identifier>
+<expression>     = <term> ( ( "+" | "-" ) <term> )*
 
-<function-declaration> = [ <access-modifier> ] 'fun' [ <identifier> '::' ] <identifier> [ <generic-param> ] '(' <parameter-list> ')' '->' <type-identifier> <block-scope>
+<term>           = <primary> ( ( "*" | "/" ) <primary> )*
 
-<anonimous-function> = '(' <parameter-list> ')' '->' <type-identifier> <block-scope>
-
-<extern-declaration> = 'extern' 'fun' <identifier> '(' [ <type-list> ] ')' '->' <type-identifier> ';'
-
-<module-declaration> = 'module' <identifier> ( '::' <identifier> )* ';'
-
-<import-declaration> = 'import' <identifier> ( '::' <identifier> )* ';'
-
-
+<primary>        = <func-call> 
+                 | <identifier> 
+                 | <literal-int> 
+                 | <literal-float>
+                 | <literal-string> 
+                 | <literal-bool>
+                 | "(" <expression> ")"

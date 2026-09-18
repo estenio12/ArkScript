@@ -1,8 +1,0 @@
-# first use path to ark file, by second use path to exp file.
-
-basepath=./lexer/
-types.ark=types.exp
-assignment.ark=assignment.exp
-expression.ark=expression.exp
-functions.ark=functions.exp
-structs.ark=structs.exp

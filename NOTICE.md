@@ -1,8 +1,8 @@
-Ark-lang
-Copyright 2026 The Ark-lang Authors
+ArkScript
+Copyright 2026 The ArkScript Authors
 
 This product includes software developed at
-The Ark-lang Project (https://github.com/seu-usuario/ark-lang).
+The ArkScript Project (https://github.com/estenio12/ArkScript).
 
 Portions of this software were authored by:
-- Estenio (Lead Architect)
+- Estenio Garcia (Lead Architect)

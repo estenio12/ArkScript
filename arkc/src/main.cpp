@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 Ark-lang Authors
+ * Copyright 2026 ArkScript Authors
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,29 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
-
-#include <string>
 #include <memory>
-#include "ModuleManeger.hpp"
+#include <chrono>
+#include "Output.hpp"
 
-namespace Ark
+int main(int argc, char** argv)
 {
-    class CoreCompile
+    auto timer_start = std::chrono::high_resolution_clock::now();
+    
+    Ark::Output::Initialize();
+
+    try 
     {
-        private:
-            std::string current_module_load;
-
-        private:
-            std::shared_ptr<Ark::ModuleResolver> module_manager;
-
-        public:
-            CoreCompile(std::shared_ptr<Ark::ModuleResolver> module_manager);
-
-        public:
-            void Compile(const std::string& path);
         
-        private:
-            void OnModuleReady();
-    };
+    }
+    catch (const std::exception& e) 
+    {
+        Ark::Output::ThrowFatalError("Core", std::string("Unexpected error: ") + e.what());
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
 }

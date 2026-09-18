@@ -14,7 +14,7 @@ else()
     add_compile_options(/W4)
 endif()
 
-include_directories(src)
+include_directories(arkc/src)
 
 set(SOURCES
     src/CoreCompile.cpp
@@ -28,18 +28,10 @@ set(SOURCES
 
 add_executable(arkc ${SOURCES})
 
-set(BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+set(BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/arkc/bin")
 set_target_properties(arkc PROPERTIES 
     RUNTIME_OUTPUT_DIRECTORY "${BIN_DIR}"
     RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BIN_DIR}"
     RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BIN_DIR}"
     OUTPUT_NAME arkc
-)
-
-add_custom_command(TARGET arkc POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "$<TARGET_FILE:arkc>"
-            "${CMAKE_CURRENT_SOURCE_DIR}/test/$<TARGET_FILE_NAME:arkc>"
-    COMMENT "Sincronizando binário com a pasta de testes..."
-    VERBATIM
 )
