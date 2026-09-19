@@ -1,7 +1,7 @@
 # 🛸 ArkScript
-> **A Arca Segura do Desenvolvimento Web.** Unindo a robustez do Rust à produtividade e ergonomia do TypeScript.
+Unindo a robustez do Rust à produtividade e ergonomia do TypeScript.
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Compiler](https://img.shields.io/badge/compiler-C%2B%2B23-00599C.svg)](#-arquitetura-do-compilador)
 [![Target](https://img.shields.io/badge/target-JavaScript%20%2F%20Node.js-yellow.svg)](#-compatibilidade-e-ecossistema)
 
