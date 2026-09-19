@@ -322,7 +322,7 @@ bool ArkScript::Lexer::IsBoolean(const std::string& target)
 
 bool ArkScript::Lexer::IsKeyword(const std::string& target)
 {
-    return ArkScript::KEYWORDS.find(target) != ArkScript::KEYWORDS.end();
+    return ArkScript::KEYWORDS_LIST.find(target) != ArkScript::KEYWORDS_LIST.end();
 }
 
 bool ArkScript::Lexer::IsOpArithmetic(const size_t& index)

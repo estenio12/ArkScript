@@ -38,11 +38,13 @@ namespace ArkScript::Ast
     struct ReturnStmtNode;
     struct ModuleDeclNode;
     struct ProgramNode;
+    struct ModuleStmtNode;
 
     enum class NodeType : uint8_t
     {
         PROGRAM,
         MODULE_DECL,
+        MODULE_STMT,
         VAR_DECL,
         CONST_DECL,
         FUN_DECL,
@@ -56,7 +58,7 @@ namespace ArkScript::Ast
         LITERAL_FLOAT,
         LITERAL_CHAR,
         LITERAL_STRING,
-        LITERAL_BOOL
+        LITERAL_BOOL,
     };
 
     struct Node
@@ -68,6 +70,11 @@ namespace ArkScript::Ast
 
         explicit Node(NodeType t) : type(t) {}
         virtual ~Node() = default;
+    };
+
+    struct ModuleMemberNode : public Node
+    {
+        explicit ModuleMemberNode(NodeType t) : Node(t) {}
     };
 
     struct ExpressionNode : public Node
@@ -117,13 +124,13 @@ namespace ArkScript::Ast
         VarDeclNode() : StatementNode(NodeType::VAR_DECL) {}
     };
 
-    struct ConstDeclNode : public StatementNode
+    struct ConstDeclNode : public ModuleMemberNode
     {
         bool is_public{false};
         std::string name;
         std::string native_type;
         std::unique_ptr<ExpressionNode> initializer;
-        ConstDeclNode() : StatementNode(NodeType::CONST_DECL) {}
+        ConstDeclNode() : ModuleMemberNode(NodeType::CONST_DECL) {}
     };
 
     struct AssignStmtNode : public StatementNode
@@ -151,26 +158,32 @@ namespace ArkScript::Ast
         std::string type;
     };
 
-    struct FunDeclNode : public StatementNode
+    struct FunDeclNode : public ModuleMemberNode
     {
         bool is_public{false};
         std::string name;
         std::vector<ParamNode> parameters;
         std::string return_type;
         std::vector<std::unique_ptr<StatementNode>> body;
-        FunDeclNode() : StatementNode(NodeType::FUN_DECL) {}
+        FunDeclNode() : ModuleMemberNode(NodeType::FUN_DECL) {}
+    };
+
+    struct ModuleStmtNode : public Node
+    {
+        std::vector<std::unique_ptr<ModuleMemberNode>> stmts;
+        ModuleStmtNode() : Node(NodeType::MODULE_STMT) {}
     };
 
     struct ModuleDeclNode : public Node
     {
-        std::string module_path;
+        std::string name;
+        std::unique_ptr<ModuleStmtNode> stmt;
         ModuleDeclNode() : Node(NodeType::MODULE_DECL) {}
     };
 
     struct ProgramNode : public Node
     {
         std::unique_ptr<ModuleDeclNode> module;
-        std::vector<std::unique_ptr<StatementNode>> statements;
         ProgramNode() : Node(NodeType::PROGRAM) {}
     };
 }

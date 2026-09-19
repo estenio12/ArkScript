@@ -8,9 +8,9 @@
 <type-native>    = "i8" | "i16" | "i32" | "i64" | "ui8" | "ui16" | "ui32" | "ui64" | "f32" | "f64" | "str" | "bool" | "char"
 <type-void>      = "void"
 
-<program>          = <module-decl> <module-stmt>*
-<module-decl>      = "module" <identifier> ( "::" <identifier> )* ";"
-<module-stmt> = <const-decl> | <fun-decl>
+<program>        = <module-decl> <module-stmt>*
+<module-decl>    = "module" <identifier> ( "::" <identifier> )* ";"
+<module-stmt>    = (<const-decl> | <fun-decl>)*
 
 <statement>      = <var-decl> | <assign-stmt> | <call-stmt> | <return-stmt>
 <assign-stmt>    = <identifier> "=" <expression> ";"
@@ -19,8 +19,8 @@
 <var-decl>       = "var" <identifier> ":" <type-native> "=" <expression> ";"
 <const-decl>     = [ "pub" ] "const" <identifier> ":" <type-native> "=" <expression> ";"
 
-<fun-decl>      = [ "pub" ] "fun" <identifier> "(" [ <parameter-list> ] ")" "->" ( <type-native> | <type-void> ) ":" <statement>* "end"
-<fun-call>      = <identifier> "(" [ <arg-list> ] ")"
+<fun-decl>       = [ "pub" ] "fun" <identifier> "(" [ <parameter-list> ] ")" "->" ( <type-native> | <type-void> ) ":" <statement>* "end"
+<fun-call>       = <identifier> "(" [ <arg-list> ] ")"
 <arg-list>       = <expression> ( "," <expression> )*
 
 <parameter>      = <identifier> ":" <type-native>

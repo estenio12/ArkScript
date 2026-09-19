@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+#include <memory>
 #include "TokenManager.hpp"
 #include "Ast.hpp"
 
@@ -22,7 +23,7 @@ namespace ArkScript
     class Parser
     {
         private:
-            ArkScript::TokenManager tokens;
+            std::unique_ptr<ArkScript::TokenManager> tokens;
 
         public:
             Parser(std::unique_ptr<ArkScript::TokenManager> tokens) : tokens(std::move(tokens)) {}
@@ -31,7 +32,13 @@ namespace ArkScript
         public:
             std::unique_ptr<ArkScript::Ast::ProgramNode> Parse();
         
-        public:
+        private:
+            const ArkScript::Token ExpectTokenType(const ArkScript::TokenType& type, const std::string& message);
+            const ArkScript::Token ExpectTokenContent(const std::string& content, const std::string& message);
+            std::string GenerateFilePathInfoByToken(const ArkScript::Token& target);
 
+        private:
+            std::unique_ptr<ArkScript::Ast::ModuleDeclNode> ParseModuleDecl();
+            std::unique_ptr<ArkScript::Ast::ModuleStmtNode> ParseModuleStmt();
     };
 }

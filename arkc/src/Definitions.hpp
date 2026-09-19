@@ -19,13 +19,53 @@
 
 namespace ArkScript
 {
-    inline const std::unordered_set<std::string> KEYWORDS = {
-        "i8", "i16", "i32", "i64", 
-        "ui8", "ui16", "ui32", "ui64",
-        "f32", "f64", "char", "bool",
-        "void", "str", "var", "const",
-        "pub", "fun", "end", "return", 
-        "module"
+    namespace KEYWORDS
+    {
+        const std::string TI8 = "i8";
+        const std::string TI16 = "i16";
+        const std::string TI32 = "i32";
+        const std::string TI64 = "i64";
+        const std::string TUI8 = "ui8";
+        const std::string TUI16 = "ui16";
+        const std::string TUI32 = "ui32";
+        const std::string TUI64 = "ui64";
+        const std::string TF32 = "f32";
+        const std::string TF64 = "f64";
+        const std::string TCHAR = "char";
+        const std::string TBOOL = "bool";
+        const std::string TVOID = "void";
+        const std::string TSTR = "str";
+        const std::string TVAR = "var";
+        const std::string TCONST = "const";
+        const std::string TPUB = "pub";
+        const std::string TFUN = "fun";
+        const std::string TEND = "end";
+        const std::string TRETURN = "return";
+        const std::string TMODULE = "module";
+    }
+
+    inline const std::unordered_set<std::string> KEYWORDS_LIST = {
+        KEYWORDS::TI8,
+        KEYWORDS::TI16,
+        KEYWORDS::TI32,
+        KEYWORDS::TI64,
+        KEYWORDS::TUI8,
+        KEYWORDS::TUI16,
+        KEYWORDS::TUI32,
+        KEYWORDS::TUI64,
+        KEYWORDS::TF32,
+        KEYWORDS::TF64,
+        KEYWORDS::TCHAR,
+        KEYWORDS::TBOOL,
+        KEYWORDS::TVOID,
+        KEYWORDS::TSTR,
+        KEYWORDS::TVAR,
+        KEYWORDS::TCONST,
+        KEYWORDS::TPUB,
+        KEYWORDS::TFUN,
+        KEYWORDS::TEND,
+        KEYWORDS::TRETURN,
+        KEYWORDS::TMODULE,
     };
 
     namespace LITERAL_VALUES
