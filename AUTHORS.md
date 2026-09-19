@@ -1,4 +1,4 @@
-# This is the official list of Ark-lang authors for copyright purposes.
+# This is the official list of ArkScript authors for copyright purposes.
 # This file is distinct from the CONTRIBUTORS file. 
 # See the LICENSE file for copying permission.
 

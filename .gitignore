@@ -1,11 +1,8 @@
 compile_commands.json
 .clangd
-bkp.ps1
-bkp.sh
 
 build/
 .cache/
 .vscode/
 
-test/arkc
-test/arkc.exe
+./arkc/bin

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(ArkLang LANGUAGES CXX)
+project(ArkScript LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,13 +17,8 @@ endif()
 include_directories(arkc/src)
 
 set(SOURCES
-    src/CoreCompile.cpp
-    src/FileHandler.cpp
-    src/Lexer.cpp
-    src/main.cpp
-    src/ModuleManager.cpp
-    src/Parser.cpp
-    src/ParserHelpers.cpp
+    arkc/src/FileHandler.cpp
+    arkc/src/main.cpp
 )
 
 add_executable(arkc ${SOURCES})
