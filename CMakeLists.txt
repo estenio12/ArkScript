@@ -21,7 +21,10 @@ set(SOURCES
     arkc/src/main.cpp
 )
 
-add_executable(arkc ${SOURCES})
+add_executable(arkc ${SOURCES}
+    arkc/src/Compiler.cpp
+    arkc/src/Lexer.cpp
+    arkc/src/Parser.cpp)
 
 set(BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/arkc/bin")
 set_target_properties(arkc PROPERTIES 

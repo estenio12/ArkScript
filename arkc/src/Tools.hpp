@@ -18,7 +18,7 @@
 #include <vector>
 #include <algorithm>
 
-namespace Ark::Tools
+namespace ArkScript::Tools
 {
     namespace Str
     {

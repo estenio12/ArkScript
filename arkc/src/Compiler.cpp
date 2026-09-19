@@ -13,25 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
 #include <string>
 #include <memory>
+#include "Global.hpp"
+#include "Lexer.hpp"
+#include "Parser.hpp"
 
 namespace ArkScript
 {
-    struct FileDescriptor
+    void Compiler(const std::string& source_file)
     {
-        std::string absolute_path;
-        std::string source_code;
-        uint64_t file_size = 0;
-    };
-
-    class FileHandler
-    {
-        public:
-            static std::shared_ptr<FileDescriptor> GetFileContent(const std::string& path);
-            
-        private:
-            static std::string PathResolver(const std::string& path);
-    };
+        auto tokens = std::make_unique<ArkScript::Lexer>(source_file)->Tokenize();
+        auto ast = std::make_unique<ArkScript::Parser>(std::move(tokens))->Parse();
+    }
 }

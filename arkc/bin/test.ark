@@ -1,0 +1,5 @@
+module main;
+
+pub fun main() -> void:
+    var t1: i8 = 223;
+end

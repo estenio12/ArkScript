@@ -23,7 +23,7 @@
 #endif
 
 
-namespace Ark::Output
+namespace ArkScript::Output
 {
     const std::string RESET   = "\033[0m";
     const std::string RED     = "\033[31m";

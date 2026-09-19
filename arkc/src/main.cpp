@@ -15,21 +15,34 @@
  */
 #include <memory>
 #include <chrono>
+#include "Args.hpp"
+#include "Global.hpp"
 #include "Output.hpp"
+#include "Compiler.hpp"
 
 int main(int argc, char** argv)
 {
     auto timer_start = std::chrono::high_resolution_clock::now();
-    
-    Ark::Output::Initialize();
+    ArkScript::Output::Initialize();
+    ArkScript::Args::BuildArgs(argc, argv);
+
+    if(ArkScript::Global::SOURCE_FILE.empty())
+    {
+        ArkScript::Output::PrintError("No source file provided. Use --h for help.");
+        return EXIT_FAILURE; 
+    }
 
     try 
     {
-        
+        ArkScript::Compiler(ArkScript::Global::SOURCE_FILE);
+
+        auto timer_end = std::chrono::high_resolution_clock::now();
+        auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(timer_end - timer_start);
+        ArkScript::Output::Print("\nCompilation completed in: " + std::to_string(elapsed_time.count()) + "ms\n");
     }
     catch (const std::exception& e) 
     {
-        Ark::Output::ThrowFatalError("Core", std::string("Unexpected error: ") + e.what());
+        ArkScript::Output::ThrowFatalError("Core", std::string("Unexpected error: ") + e.what());
         return EXIT_FAILURE;
     }
 

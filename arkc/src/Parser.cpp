@@ -13,25 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
-#include <string>
-#include <memory>
 
-namespace ArkScript
-{
-    struct FileDescriptor
-    {
-        std::string absolute_path;
-        std::string source_code;
-        uint64_t file_size = 0;
-    };
+ #include "Parser.hpp"
+ #include "Ast.hpp"
 
-    class FileHandler
-    {
-        public:
-            static std::shared_ptr<FileDescriptor> GetFileContent(const std::string& path);
-            
-        private:
-            static std::string PathResolver(const std::string& path);
-    };
-}
+std::unique_ptr<ArkScript::Ast::ProgramNode> ArkScript::Parser::Parse()
+ {
+    new ArkScript::Ast::ProgramNode();
+ }
