@@ -1,5 +1,5 @@
 # 🛸 ArkScript
-Unindo a robustez do Rust à produtividade e ergonomia do TypeScript.
+**ArkScript** é uma linguagem de programação imperativa e estruturada voltada para a Web e runtimes modernos (Node.js, Bun, Deno). Projetada para entregar a segurança de dados e a previsibilidade do Rust sem a complexidade do *Borrow Checker*.
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Compiler](https://img.shields.io/badge/compiler-C%2B%2B23-00599C.svg)](#-arquitetura-do-compilador)
