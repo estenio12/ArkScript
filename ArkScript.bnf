@@ -10,16 +10,17 @@
 
 <program>        = <module-decl> <module-stmt>*
 <module-decl>    = "module" <identifier> ( "::" <identifier> )* ";"
-<module-stmt>    = (<const-decl> | <fun-decl>)*
+<module-stmt>    = [ "pub" ] (<readonly-decl> | <fun-decl>)
 
-<statement>      = <var-decl> | <assign-stmt> | <call-stmt> | <return-stmt>
+<statement>      = <const-decl> | <var-decl> | <assign-stmt> | <call-stmt> | <return-stmt>
 <assign-stmt>    = <identifier> "=" <expression> ";"
 <call-stmt>      = <fun-call> ";"
 
-<var-decl>       = "var" <identifier> ":" <type-native> "=" <expression> ";"
-<const-decl>     = [ "pub" ] "const" <identifier> ":" <type-native> "=" <expression> ";"
+<readonly-decl>  = "readonly" <identifier> ":" <type-native> "=" <expression> ";"
+<const-decl>     = "const" <identifier> ":" <type-native> "=" <expression> ";"
+<var-decl>       = "var" <identifier> ":" <type-native> ["=" <expression>] ";"
 
-<fun-decl>       = [ "pub" ] "fun" <identifier> "(" [ <parameter-list> ] ")" "->" ( <type-native> | <type-void> ) ":" <statement>* "end"
+<fun-decl>       = "fun" <identifier> "(" [ <parameter-list> ] ")" "->" ( <type-native> | <type-void> ) ":" <statement>* "end"
 <fun-call>       = <identifier> "(" [ <arg-list> ] ")"
 <arg-list>       = <expression> ( "," <expression> )*
 

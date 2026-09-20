@@ -46,7 +46,6 @@ namespace ArkScript::Ast
         MODULE_DECL,
         MODULE_STMT,
         VAR_DECL,
-        CONST_DECL,
         FUN_DECL,
         ASSIGN_STMT,
         CALL_STMT,
@@ -61,15 +60,33 @@ namespace ArkScript::Ast
         LITERAL_BOOL,
     };
 
+    enum class BindingKind : uint8_t 
+    { 
+        VAR, 
+        CONST, 
+        READONLY 
+    };
+
     struct Node
     {
         NodeType type;
         std::string file_path;
         uint32_t line{0};
-        uint32_t column{0};
+        uint32_t col{0};
+        uint32_t length{0};
 
         explicit Node(NodeType t) : type(t) {}
+        Node(NodeType type, const ArkScript::Token& token) 
+        : type(type), line(token.line), col(token.col), length(token.content.length()) {}
         virtual ~Node() = default;
+
+        public:
+            void SetLocation(const ArkScript::Token& token)
+            {
+                this->line = token.line;
+                this->col = token.col;
+                this->length = token.length();
+            }
     };
 
     struct ModuleMemberNode : public Node
@@ -116,21 +133,14 @@ namespace ArkScript::Ast
         FunCallNode() : ExpressionNode(NodeType::FUN_CALL) {}
     };
 
-    struct VarDeclNode : public StatementNode
-    {
-        std::string name;
-        std::string native_type;
-        std::unique_ptr<ExpressionNode> initializer;
-        VarDeclNode() : StatementNode(NodeType::VAR_DECL) {}
-    };
-
-    struct ConstDeclNode : public ModuleMemberNode
+    struct VarDeclNode : public ModuleMemberNode
     {
         bool is_public{false};
+        BindingKind kind{BindingKind::VAR};
         std::string name;
         std::string native_type;
         std::unique_ptr<ExpressionNode> initializer;
-        ConstDeclNode() : ModuleMemberNode(NodeType::CONST_DECL) {}
+        VarDeclNode() : ModuleMemberNode(NodeType::VAR_DECL) {}
     };
 
     struct AssignStmtNode : public StatementNode

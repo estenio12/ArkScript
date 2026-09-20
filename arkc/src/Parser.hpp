@@ -36,9 +36,13 @@ namespace ArkScript
             const ArkScript::Token ExpectTokenType(const ArkScript::TokenType& type, const std::string& message);
             const ArkScript::Token ExpectTokenContent(const std::string& content, const std::string& message);
             std::string GenerateFilePathInfoByToken(const ArkScript::Token& target);
+            [[noreturn]] void ThrowParserError(const ArkScript::Token& token, std::string message);
 
         private:
             std::unique_ptr<ArkScript::Ast::ModuleDeclNode> ParseModuleDecl();
             std::unique_ptr<ArkScript::Ast::ModuleStmtNode> ParseModuleStmt();
+            std::unique_ptr<ArkScript::Ast::VarDeclNode> ParseVarDecl(bool is_public = false);
+            std::unique_ptr<ArkScript::Ast::FunDeclNode> ParseFunDecl(bool is_public = false);
+            std::unique_ptr<ArkScript::Ast::ExpressionNode> ParseExpression();
     };
 }

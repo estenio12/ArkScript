@@ -52,6 +52,8 @@ namespace ArkScript
         TokenType type;
         uint32_t line;
         uint32_t col;
+
+        size_t length() const { return content.length(); }
     };
 
     class TokenManager
@@ -79,13 +81,13 @@ namespace ArkScript
                 return tokens[cursor + offset];
             }
         
-            const Token& Consume() 
+            const Token& Consume()
             {
                 if (cursor < tokens.size()) return tokens[cursor++];
                 return tokens.back();
             }
         
-            void Advance() 
+            void Advance()
             {
                 if (cursor < tokens.size()) cursor++;
             }

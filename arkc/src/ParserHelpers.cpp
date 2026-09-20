@@ -23,10 +23,7 @@ const ArkScript::Token ArkScript::Parser::ExpectTokenType(const ArkScript::Token
     auto token = this->tokens->Consume();
     if(token.type == expected) return token;
 
-    auto output_message = this->GenerateFilePathInfoByToken(token);
-    ArkScript::Output::ThrowFatalError(output_message, message);
-
-    return token;
+    this->ThrowParserError(token, message);
 }
 
 const ArkScript::Token ArkScript::Parser::ExpectTokenContent(const std::string& expected, const std::string& message)
@@ -34,13 +31,20 @@ const ArkScript::Token ArkScript::Parser::ExpectTokenContent(const std::string& 
     auto token = this->tokens->Consume();
     if(token.content == expected) return token;
 
-    auto output_message = this->GenerateFilePathInfoByToken(token);
-    ArkScript::Output::ThrowFatalError(output_message, message);
+    this->ThrowParserError(token, message);
 }
 
 std::string ArkScript::Parser::GenerateFilePathInfoByToken(const ArkScript::Token& token)
 {
     std::string buffer = this->tokens->GetFilePath();
-    buffer += "(Ln: " + std::to_string(token.line) + ", Col: " + std::to_string(token.col) + "): ";
+    buffer += "(Ln: " + std::to_string(token.line) + 
+              ", Col: " + std::to_string(token.col) + 
+              ", Len: " + std::to_string(token.content.length()) + "): ";
     return buffer;
+}
+
+[[noreturn]] void ArkScript::Parser::ThrowParserError(const ArkScript::Token& token, std::string message)
+{
+    auto module_error = this->GenerateFilePathInfoByToken(token);
+    ArkScript::Output::ThrowFatalError(module_error, message);
 }

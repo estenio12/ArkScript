@@ -42,6 +42,7 @@ namespace ArkScript
         const std::string TEND = "end";
         const std::string TRETURN = "return";
         const std::string TMODULE = "module";
+        const std::string TREADONLY = "readonly";
     }
 
     inline const std::unordered_set<std::string> KEYWORDS_LIST = {
@@ -66,6 +67,7 @@ namespace ArkScript
         KEYWORDS::TEND,
         KEYWORDS::TRETURN,
         KEYWORDS::TMODULE,
+        KEYWORDS::TREADONLY,
     };
 
     namespace LITERAL_VALUES
