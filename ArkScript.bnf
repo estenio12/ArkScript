@@ -12,6 +12,7 @@
 <module-decl>    = "module" <identifier> ( "::" <identifier> )* ";"
 <module-stmt>    = [ "pub" ] (<readonly-decl> | <fun-decl>)
 
+<block>          = ":" <statement>* "end"
 <statement>      = <const-decl> | <var-decl> | <assign-stmt> | <call-stmt> | <return-stmt>
 <assign-stmt>    = <identifier> "=" <expression> ";"
 <call-stmt>      = <fun-call> ";"
@@ -20,7 +21,7 @@
 <const-decl>     = "const" <identifier> ":" <type-native> "=" <expression> ";"
 <var-decl>       = "var" <identifier> ":" <type-native> ["=" <expression>] ";"
 
-<fun-decl>       = "fun" <identifier> "(" [ <parameter-list> ] ")" "->" ( <type-native> | <type-void> ) ":" <statement>* "end"
+<fun-decl>       = "fun" <identifier> "(" [ <parameter-list> ] ")" "->" ( <type-native> | <type-void> ) <block>
 <fun-call>       = <identifier> "(" [ <arg-list> ] ")"
 <arg-list>       = <expression> ( "," <expression> )*
 

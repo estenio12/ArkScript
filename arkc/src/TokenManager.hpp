@@ -73,7 +73,7 @@ namespace ArkScript
 
         public:
             void PushToken(Token token){ this->tokens.push_back(token); }
-            bool IsAtEnd() const { return cursor >= tokens.size(); }
+            bool IsEOF() const { return cursor >= tokens.size(); }
         
             const Token& Peek(size_t offset = 0) const 
             {

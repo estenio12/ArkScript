@@ -50,7 +50,7 @@ std::unique_ptr<ArkScript::Ast::ModuleStmtNode> ArkScript::Parser::ParseModuleSt
 {
     auto mod_stmt = std::make_unique<ArkScript::Ast::ModuleStmtNode>();
 
-    while (!this->tokens->IsAtEnd())
+    while (!this->tokens->IsEOF())
     {
         bool is_public = false;
 
@@ -109,15 +109,8 @@ std::unique_ptr<ArkScript::Ast::VarDeclNode> ArkScript::Parser::ParseVarDecl(boo
 
     this->ExpectTokenContent(ArkScript::DELIMITER::COLON, "Expected ':' after identifier.");
     
-    auto tk_type = this->tokens->Consume();
-    if(tk_type.type == ArkScript::TokenType::KEYWORD)
-    {
-        var_decl->native_type = tk_type.content;
-    }
-    else
-    {
-        this->ThrowParserError(tk_type, "Expected a type definition after identifier.");
-    }
+    auto tk_type = this->ExpectTokenType(ArkScript::TokenType::KEYWORD, "Expected a type definition after identifier.");
+    var_decl->native_type = tk_type.content;
 
     if(this->tokens->Peek().content == ArkScript::OP_ASSIGNMENT::ASSIGN)
     {
@@ -145,12 +138,90 @@ std::unique_ptr<ArkScript::Ast::VarDeclNode> ArkScript::Parser::ParseVarDecl(boo
 
 std::unique_ptr<ArkScript::Ast::FunDeclNode> ArkScript::Parser::ParseFunDecl(bool is_public)
 {
-    return std::make_unique<ArkScript::Ast::FunDeclNode>();
+    auto tk_fun = this->ExpectTokenContent(ArkScript::KEYWORDS::TFUN, "Expected keyword 'fun' to start function declaration.");
+    
+    auto fun_decl = std::make_unique<ArkScript::Ast::FunDeclNode>();
+    fun_decl->is_public = is_public;
+    fun_decl->SetLocation(tk_fun);
+
+    auto tk_identifier = this->ExpectTokenType(ArkScript::TokenType::IDENTIFIER, "Expected function name after 'fun'.");
+    fun_decl->name = tk_identifier.content;
+
+    this->ExpectTokenContent(ArkScript::DELIMITER::LPARAN, "Expected '(' after function identifier.");
+    
+    fun_decl->parameters = this->ParseParameterList();
+    
+    this->ExpectTokenContent(ArkScript::DELIMITER::RPARAN, "Expected ')' after parameter list.");
+    this->ExpectTokenContent(ArkScript::DELIMITER::ARROW, "Expected '->' after closing parameter list.");
+
+    auto tk_type = this->ExpectTokenType(ArkScript::TokenType::KEYWORD, "Expected a return type definition after '->'.");
+    fun_decl->return_type = tk_type.content;
+    fun_decl->body = std::move(this->ParseBlockScope());
+  
+    return fun_decl;
+}
+
+std::vector<std::unique_ptr<ArkScript::Ast::ParamNode>> ArkScript::Parser::ParseParameterList()
+{
+    std::vector<std::unique_ptr<ArkScript::Ast::ParamNode>> parameters;
+
+    if (this->tokens->Peek().content == ArkScript::DELIMITER::RPARAN) return parameters;
+
+    while (true)
+    {
+        auto tk_param_name = this->ExpectTokenType(ArkScript::TokenType::IDENTIFIER, "Expected parameter name.");
+
+        this->ExpectTokenContent(ArkScript::DELIMITER::COLON, "Expected ':' after parameter name.");
+
+        auto tk_param_type = this->ExpectTokenType(ArkScript::TokenType::KEYWORD, "Expected parameter type.");
+
+        parameters.push_back(std::make_unique<ArkScript::Ast::ParamNode>(
+            tk_param_name.content, 
+            tk_param_type.content
+        ));
+
+        if (this->tokens->Peek().content == ArkScript::DELIMITER::COMMA)
+        {
+            this->tokens->Consume(); 
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return parameters;
 }
 
 std::unique_ptr<ArkScript::Ast::ExpressionNode> ArkScript::Parser::ParseExpression()
 {
     return std::make_unique<ArkScript::Ast::ExpressionNode>(ArkScript::Ast::NodeType::BINARY_EXPR);
 }
+
+std::unique_ptr<ArkScript::Ast::BlockScopeNode> ArkScript::Parser::ParseBlockScope()
+{
+    auto tk_colon = this->ExpectTokenContent(ArkScript::DELIMITER::COLON, "Expected ':' to start block scope.");
+    auto block_node = std::make_unique<ArkScript::Ast::BlockScopeNode>(tk_colon);
+
+    while (this->tokens->Peek().content != ArkScript::KEYWORDS::TEND && !this->tokens->IsEOF())
+    {
+        block_node->stmts.push_back(this->ParseStatement());
+    }
+
+    if (this->tokens->IsEOF())
+    {
+        this->ThrowParserError(this->tokens->Peek(), "Unexpected EOF inside block scope. Expected 'end'.");
+    }
+
+    this->ExpectTokenContent(ArkScript::KEYWORDS::TEND, "Expected 'end' keyword to close block scope.");
+
+    return block_node;
+}
+
+std::unique_ptr<ArkScript::Ast::StatementNode> ArkScript::Parser::ParseStatement()
+{
+    return std::make_unique<ArkScript::Ast::StatementNode>(ArkScript::Ast::NodeType::VAR_DECL);
+}
+
 
 

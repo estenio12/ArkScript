@@ -39,6 +39,7 @@ namespace ArkScript::Ast
     struct ModuleDeclNode;
     struct ProgramNode;
     struct ModuleStmtNode;
+    struct BlockScopeNode;
 
     enum class NodeType : uint8_t
     {
@@ -58,6 +59,7 @@ namespace ArkScript::Ast
         LITERAL_CHAR,
         LITERAL_STRING,
         LITERAL_BOOL,
+        BLOCK_SCOPE,
     };
 
     enum class BindingKind : uint8_t 
@@ -166,16 +168,27 @@ namespace ArkScript::Ast
     {
         std::string name;
         std::string type;
+
+        explicit ParamNode(std::string name, std::string type): name(name), type(type) {};
     };
 
     struct FunDeclNode : public ModuleMemberNode
     {
         bool is_public{false};
         std::string name;
-        std::vector<ParamNode> parameters;
         std::string return_type;
-        std::vector<std::unique_ptr<StatementNode>> body;
+        std::unique_ptr<BlockScopeNode> body;
+        std::vector<std::unique_ptr<ParamNode>> parameters;
         FunDeclNode() : ModuleMemberNode(NodeType::FUN_DECL) {}
+    };
+
+    struct BlockScopeNode : public Node
+    {
+        std::vector<std::unique_ptr<StatementNode>> stmts;
+        BlockScopeNode() : Node(NodeType::BLOCK_SCOPE) {}
+
+        explicit BlockScopeNode(const ArkScript::Token& token) 
+        : Node(NodeType::BLOCK_SCOPE, token) {}
     };
 
     struct ModuleStmtNode : public Node
