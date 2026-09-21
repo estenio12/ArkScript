@@ -188,7 +188,12 @@ std::vector<std::unique_ptr<ArkScript::Ast::ParamNode>> ArkScript::Parser::Parse
 
         if (this->tokens->Peek().content == ArkScript::DELIMITER::COMMA)
         {
-            this->tokens->Consume(); 
+            this->tokens->Consume();
+
+            if (this->tokens->Peek().content == ArkScript::DELIMITER::RPARAN)
+            {
+                this->ThrowParserError(this->tokens->Peek(), "Unexpected trailing comma in parameter list.");
+            }
         }
         else
         {
@@ -243,6 +248,10 @@ std::unique_ptr<ArkScript::Ast::StatementNode> ArkScript::Parser::ParseStatement
         {
             return this->ParseAssignStmt();
         }
+        else if(this->tokens->Peek(1).content == ArkScript::DELIMITER::LPARAN)
+        {
+            return this->ParseCallStmt();
+        }
     }
 
     this->ThrowParserError(token, "Unexpected '"+ token.content+ "' inside statement block.");
@@ -276,4 +285,53 @@ std::unique_ptr<ArkScript::Ast::AssignStmtNode> ArkScript::Parser::ParseAssignSt
     return assign_stmt;
 }
 
+std::unique_ptr<ArkScript::Ast::CallStmtNode> ArkScript::Parser::ParseCallStmt()
+{
+    auto call_stmt = std::make_unique<ArkScript::Ast::CallStmtNode>(this->tokens->Peek());
+    call_stmt->call = this->ParseFunCall();
+    this->ExpectTokenContent(ArkScript::DELIMITER::SEMICOLON, "Expected ';' at the end of function call statement.");
+    return call_stmt;
+}
 
+std::unique_ptr<ArkScript::Ast::FunCallNode> ArkScript::Parser::ParseFunCall()
+{
+    auto tk_identifier = this->ExpectTokenType(ArkScript::TokenType::IDENTIFIER, "Expected function name identifier in call expression.");
+    auto fun_call = std::make_unique<ArkScript::Ast::FunCallNode>(tk_identifier);
+
+    this->ExpectTokenContent(ArkScript::DELIMITER::LPARAN, "Expected '(' after identifier.");
+
+    if(this->tokens->Peek().content != ArkScript::DELIMITER::RPARAN)
+    {
+        fun_call->argument = this->ParseArgumentList();
+    }
+
+    this->ExpectTokenContent(ArkScript::DELIMITER::RPARAN, "Expected ')' to close argument list.");
+    
+    return fun_call;
+}
+
+std::unique_ptr<ArkScript::Ast::ArgumentList> ArkScript::Parser::ParseArgumentList()
+{
+    auto arg_list = std::make_unique<ArkScript::Ast::ArgumentList>(this->tokens->Peek());
+
+    while (true)
+    {
+        arg_list->arguments.push_back(this->ParseExpression());
+
+        if (this->tokens->Peek().content == ArkScript::DELIMITER::COMMA)
+        {
+            this->tokens->Consume();
+            
+            if (this->tokens->Peek().content == ArkScript::DELIMITER::RPARAN)
+            {
+                this->ThrowParserError(this->tokens->Peek(), "Unexpected trailing comma in argument list.");
+            }
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return arg_list;
+}

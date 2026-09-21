@@ -54,6 +54,7 @@ namespace ArkScript::Ast
         RETURN_STMT,
         BINARY_EXPR,
         FUN_CALL,
+        ARGUMENTO_LIST,
         IDENTIFIER,
         LITERAL_INT,
         LITERAL_FLOAT,
@@ -125,9 +126,15 @@ namespace ArkScript::Ast
 
     struct FunCallNode : public ExpressionNode
     {
-        std::string callee;
-        std::vector<std::unique_ptr<ExpressionNode>> arguments;
+        std::string name;
+        std::unique_ptr<ArgumentList> argument;
         FunCallNode() : ExpressionNode(NodeType::FUN_CALL) {}
+    };
+
+    struct ArgumentList : public ExpressionNode
+    {
+        std::vector<std::unique_ptr<ExpressionNode>> arguments;
+        ArgumentList() : ExpressionNode(NodeType::ARGUMENTO_LIST) {}
     };
 
     struct VarDeclNode : public StatementNode

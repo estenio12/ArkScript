@@ -50,5 +50,8 @@ namespace ArkScript
             std::unique_ptr<ArkScript::Ast::StatementNode> ParseStatement();
             std::unique_ptr<ArkScript::Ast::ReturnStmtNode> ParseReturnStmt();
             std::unique_ptr<ArkScript::Ast::AssignStmtNode> ParseAssignStmt();
+            std::unique_ptr<ArkScript::Ast::CallStmtNode> ParseCallStmt();
+            std::unique_ptr<ArkScript::Ast::FunCallNode> ParseFunCall();
+            std::unique_ptr<ArkScript::Ast::ArgumentList> ParseArgumentList();
     };
 }
