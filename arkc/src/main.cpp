@@ -23,7 +23,7 @@
 int main(int argc, char** argv)
 {
     auto timer_start = std::chrono::high_resolution_clock::now();
-    ArkScript::Output::Initialize();
+    ArkScript::Output::WindowsInitializeConfig();
     ArkScript::Args::BuildArgs(argc, argv);
 
     if(ArkScript::Global::SOURCE_FILE.empty())

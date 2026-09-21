@@ -41,11 +41,14 @@ namespace ArkScript
         private:
             std::unique_ptr<ArkScript::Ast::ModuleDeclNode> ParseModuleDecl();
             std::unique_ptr<ArkScript::Ast::ModuleStmtNode> ParseModuleStmt();
-            std::unique_ptr<ArkScript::Ast::VarDeclNode> ParseVarDecl(bool is_public = false);
+            std::unique_ptr<ArkScript::Ast::VarDeclNode> ParseVarDecl();
             std::unique_ptr<ArkScript::Ast::FunDeclNode> ParseFunDecl(bool is_public = false);
+            std::unique_ptr<ArkScript::Ast::ModuleReadonlyDeclNode> ParseModuleReadonlyDecl(bool is_public = false);
             std::unique_ptr<ArkScript::Ast::ExpressionNode> ParseExpression();
             std::vector<std::unique_ptr<ArkScript::Ast::ParamNode>> ParseParameterList();
             std::unique_ptr<ArkScript::Ast::BlockScopeNode> ParseBlockScope();
             std::unique_ptr<ArkScript::Ast::StatementNode> ParseStatement();
+            std::unique_ptr<ArkScript::Ast::ReturnStmtNode> ParseReturnStmt();
+            std::unique_ptr<ArkScript::Ast::AssignStmtNode> ParseAssignStmt();
     };
 }

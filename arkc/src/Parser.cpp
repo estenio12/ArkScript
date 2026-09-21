@@ -22,7 +22,7 @@
 std::unique_ptr<ArkScript::Ast::ProgramNode> ArkScript::Parser::Parse()
 {
     auto program = std::make_unique<ArkScript::Ast::ProgramNode>();
-    program->module = std::move(this->ParseModuleDecl());
+    program->module = this->ParseModuleDecl();
     return program;
 }
 
@@ -30,9 +30,8 @@ std::unique_ptr<ArkScript::Ast::ModuleDeclNode> ArkScript::Parser::ParseModuleDe
 {
     auto tk_module = this->ExpectTokenContent(ArkScript::KEYWORDS::TMODULE, "Expected 'module' declaration at the beginning of the file.");
     
-    auto module = std::make_unique<ArkScript::Ast::ModuleDeclNode>();
+    auto module = std::make_unique<ArkScript::Ast::ModuleDeclNode>(tk_module);
     module->name = this->ExpectTokenType(ArkScript::TokenType::IDENTIFIER, "Expected module name after 'module'.").content;
-    module->SetLocation(tk_module);
     
     while (this->tokens->Peek().content == ArkScript::DELIMITER::SCOPEACCESS)
     {
@@ -42,7 +41,7 @@ std::unique_ptr<ArkScript::Ast::ModuleDeclNode> ArkScript::Parser::ParseModuleDe
     }
 
     this->ExpectTokenContent(ArkScript::DELIMITER::SEMICOLON, "Expected ';' after module declaration.");
-    module->stmt = std::move(this->ParseModuleStmt());
+    module->stmt = this->ParseModuleStmt();
     return module;
 }
 
@@ -64,11 +63,11 @@ std::unique_ptr<ArkScript::Ast::ModuleStmtNode> ArkScript::Parser::ParseModuleSt
 
         if (token.content == ArkScript::KEYWORDS::TREADONLY)
         {
-            mod_stmt->stmts.push_back(std::move(this->ParseVarDecl(is_public)));
+            mod_stmt->stmts.push_back(this->ParseModuleReadonlyDecl(is_public));
         }
         else if (token.content == ArkScript::KEYWORDS::TFUN)
         {
-            mod_stmt->stmts.push_back(std::move(this->ParseFunDecl(is_public)));
+            mod_stmt->stmts.push_back(this->ParseFunDecl(is_public));
         }
         else
         {
@@ -79,29 +78,19 @@ std::unique_ptr<ArkScript::Ast::ModuleStmtNode> ArkScript::Parser::ParseModuleSt
     return mod_stmt;
 }
 
-std::unique_ptr<ArkScript::Ast::VarDeclNode> ArkScript::Parser::ParseVarDecl(bool is_public)
+std::unique_ptr<ArkScript::Ast::VarDeclNode> ArkScript::Parser::ParseVarDecl()
 {
-    auto var_decl = std::make_unique<ArkScript::Ast::VarDeclNode>();
-    var_decl->is_public = is_public;
-    
     auto tk_decl = this->tokens->Consume();
-    var_decl->SetLocation(tk_decl);
+    auto var_decl = std::make_unique<ArkScript::Ast::VarDeclNode>(tk_decl);
 
-    if(tk_decl.content == ArkScript::KEYWORDS::TREADONLY)
+    if(tk_decl.content == ArkScript::KEYWORDS::TCONST ||
+       tk_decl.content == ArkScript::KEYWORDS::TVAR   )
     {
-        var_decl->kind = ArkScript::Ast::BindingKind::READONLY;
-    }
-    else if(tk_decl.content == ArkScript::KEYWORDS::TCONST)
-    {
-        var_decl->kind = ArkScript::Ast::BindingKind::CONST;
-    }
-    else if(tk_decl.content == ArkScript::KEYWORDS::TVAR)
-    {
-        var_decl->kind = ArkScript::Ast::BindingKind::VAR;
+        var_decl->is_constant = tk_decl.content == ArkScript::KEYWORDS::TCONST;
     }
     else
     {
-        this->ThrowParserError(tk_decl, "Expected 'const', 'var' or 'readonly' keyword to start declaration.");
+        this->ThrowParserError(tk_decl, "Expected 'const' or 'var keyword to start declaration.");
     }
 
     auto tk_identifier = this->ExpectTokenType(ArkScript::TokenType::IDENTIFIER, "Expected identifier after keywords 'const', 'var' or 'readonly'.");
@@ -114,20 +103,15 @@ std::unique_ptr<ArkScript::Ast::VarDeclNode> ArkScript::Parser::ParseVarDecl(boo
 
     if(this->tokens->Peek().content == ArkScript::OP_ASSIGNMENT::ASSIGN)
     {
-        // Consome '='.
+        // Consume '='.
         this->tokens->Consume(); 
-        var_decl->initializer = std::move(this->ParseExpression());
+        var_decl->initializer = this->ParseExpression();
     }
     else
     {
-        if(var_decl->kind == ArkScript::Ast::BindingKind::CONST)
+        if(var_decl->is_constant)
         {
-            this->ThrowParserError(this->tokens->Peek(), "Constant definition must have an assignment.");
-        }
-        
-        if(var_decl->kind == ArkScript::Ast::BindingKind::READONLY)
-        {
-            this->ThrowParserError(this->tokens->Peek(), "Readonly definition must have an assignment.");
+            this->ThrowParserError(this->tokens->Peek(), "Constant definition must have an atribuition.");
         }
     }
 
@@ -140,9 +124,8 @@ std::unique_ptr<ArkScript::Ast::FunDeclNode> ArkScript::Parser::ParseFunDecl(boo
 {
     auto tk_fun = this->ExpectTokenContent(ArkScript::KEYWORDS::TFUN, "Expected keyword 'fun' to start function declaration.");
     
-    auto fun_decl = std::make_unique<ArkScript::Ast::FunDeclNode>();
+    auto fun_decl = std::make_unique<ArkScript::Ast::FunDeclNode>(tk_fun);
     fun_decl->is_public = is_public;
-    fun_decl->SetLocation(tk_fun);
 
     auto tk_identifier = this->ExpectTokenType(ArkScript::TokenType::IDENTIFIER, "Expected function name after 'fun'.");
     fun_decl->name = tk_identifier.content;
@@ -156,9 +139,32 @@ std::unique_ptr<ArkScript::Ast::FunDeclNode> ArkScript::Parser::ParseFunDecl(boo
 
     auto tk_type = this->ExpectTokenType(ArkScript::TokenType::KEYWORD, "Expected a return type definition after '->'.");
     fun_decl->return_type = tk_type.content;
-    fun_decl->body = std::move(this->ParseBlockScope());
+    fun_decl->body = this->ParseBlockScope();
   
     return fun_decl;
+}
+
+std::unique_ptr<ArkScript::Ast::ModuleReadonlyDeclNode> ArkScript::Parser::ParseModuleReadonlyDecl(bool is_public)
+{
+    auto tk_readonly = this->ExpectTokenContent(ArkScript::KEYWORDS::TREADONLY, "Expected 'readonly' keyword to start declaration.");
+    auto readonly_decl = std::make_unique<ArkScript::Ast::ModuleReadonlyDeclNode>(tk_readonly);
+    readonly_decl->is_public = is_public;
+
+    auto tk_identifier = this->ExpectTokenType(ArkScript::TokenType::IDENTIFIER, "Expected identifier after 'readonly'.");
+    readonly_decl->name = tk_identifier.content;
+
+    this->ExpectTokenContent(ArkScript::DELIMITER::COLON, "Expected ':' after identifier.");
+    
+    auto tk_type = this->ExpectTokenType(ArkScript::TokenType::KEYWORD, "Expected a type definition after identifier.");
+    readonly_decl->native_type = tk_type.content;
+
+    this->ExpectTokenContent(ArkScript::OP_ASSIGNMENT::ASSIGN, "Readonly declaration must be initialized with an assignment '='.");
+
+    readonly_decl->initializer = this->ParseExpression();
+
+    this->ExpectTokenContent(ArkScript::DELIMITER::SEMICOLON, "Expected ';' at the end of declaration.");
+
+    return readonly_decl;
 }
 
 std::vector<std::unique_ptr<ArkScript::Ast::ParamNode>> ArkScript::Parser::ParseParameterList()
@@ -220,8 +226,54 @@ std::unique_ptr<ArkScript::Ast::BlockScopeNode> ArkScript::Parser::ParseBlockSco
 
 std::unique_ptr<ArkScript::Ast::StatementNode> ArkScript::Parser::ParseStatement()
 {
-    return std::make_unique<ArkScript::Ast::StatementNode>(ArkScript::Ast::NodeType::VAR_DECL);
+    auto token = this->tokens->Peek();
+
+    if(token.content == ArkScript::KEYWORDS::TCONST ||
+       token.content == ArkScript::KEYWORDS::TVAR   )
+    {
+        return this->ParseVarDecl();
+    }
+    else if(token.content == ArkScript::KEYWORDS::TRETURN)
+    {
+        return this->ParseReturnStmt();
+    }
+    else if(token.type == ArkScript::TokenType::IDENTIFIER)
+    {
+        if(this->tokens->Peek(1).content == ArkScript::OP_ASSIGNMENT::ASSIGN)
+        {
+            return this->ParseAssignStmt();
+        }
+    }
+
+    this->ThrowParserError(token, "Unexpected '"+ token.content+ "' inside statement block.");
 }
 
+std::unique_ptr<ArkScript::Ast::ReturnStmtNode> ArkScript::Parser::ParseReturnStmt()
+{
+    auto tk_ret = this->ExpectTokenContent(ArkScript::KEYWORDS::TRETURN, "Expected 'return' keyword to start return statement.");
+    auto return_stmt = std::make_unique<ArkScript::Ast::ReturnStmtNode>(tk_ret);
+    
+    if (this->tokens->Peek().content != ArkScript::DELIMITER::SEMICOLON)
+    {
+        return_stmt->expression = this->ParseExpression();
+    }
+
+    this->ExpectTokenContent(ArkScript::DELIMITER::SEMICOLON, "Expected ';' at the end of return statement.");
+    return return_stmt;
+}
+
+std::unique_ptr<ArkScript::Ast::AssignStmtNode> ArkScript::Parser::ParseAssignStmt()
+{
+    auto tk_identifier = this->ExpectTokenType(ArkScript::TokenType::IDENTIFIER, "Expected an identifier target for assignment.");
+    auto assign_stmt = std::make_unique<ArkScript::Ast::AssignStmtNode>(tk_identifier);
+    
+    this->ExpectTokenContent(ArkScript::OP_ASSIGNMENT::ASSIGN, "Expected '=' after identifier.");
+    
+    assign_stmt->expression = this->ParseExpression();
+
+    this->ExpectTokenContent(ArkScript::DELIMITER::SEMICOLON, "Expected ';' at the end of assignment statement.");
+
+    return assign_stmt;
+}
 
 

@@ -17,12 +17,6 @@
 
 #include <iostream>
 
-#ifdef _WIN32
-    #define WIN32_LEAN_AND_MEAN
-    #include <windows.h>
-#endif
-
-
 namespace ArkScript::Output
 {
     const std::string RESET   = "\033[0m";
@@ -32,18 +26,7 @@ namespace ArkScript::Output
     const std::string BOLD    = "\033[1m";
     const std::string BLUE    = "\033[34m";
 
-    inline void Initialize() 
-    {
-        #ifdef _WIN32
-            HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-            DWORD dwMode = 0;
-            GetConsoleMode(hOut, &dwMode);
-            SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-
-            SetConsoleOutputCP(CP_UTF8);
-            SetConsoleCP(CP_UTF8);
-        #endif
-    }
+    void WindowsInitializeConfig();
 
     inline void Print(std::string message, bool break_line = true, bool use_bold = false)
     {

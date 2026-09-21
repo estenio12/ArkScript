@@ -40,6 +40,7 @@ namespace ArkScript::Ast
     struct ProgramNode;
     struct ModuleStmtNode;
     struct BlockScopeNode;
+    struct ModuleReadonlyDeclNode;
 
     enum class NodeType : uint8_t
     {
@@ -60,13 +61,7 @@ namespace ArkScript::Ast
         LITERAL_STRING,
         LITERAL_BOOL,
         BLOCK_SCOPE,
-    };
-
-    enum class BindingKind : uint8_t 
-    { 
-        VAR, 
-        CONST, 
-        READONLY 
+        MODULE_READONLY_DECL,
     };
 
     struct Node
@@ -135,20 +130,19 @@ namespace ArkScript::Ast
         FunCallNode() : ExpressionNode(NodeType::FUN_CALL) {}
     };
 
-    struct VarDeclNode : public ModuleMemberNode
+    struct VarDeclNode : public StatementNode
     {
-        bool is_public{false};
-        BindingKind kind{BindingKind::VAR};
+        bool is_constant{false};
         std::string name;
         std::string native_type;
         std::unique_ptr<ExpressionNode> initializer;
-        VarDeclNode() : ModuleMemberNode(NodeType::VAR_DECL) {}
+        VarDeclNode() : StatementNode(NodeType::VAR_DECL){}
     };
 
     struct AssignStmtNode : public StatementNode
     {
         std::string name;
-        std::unique_ptr<ExpressionNode> value;
+        std::unique_ptr<ExpressionNode> expression;
         AssignStmtNode() : StatementNode(NodeType::ASSIGN_STMT) {}
     };
 
@@ -189,6 +183,15 @@ namespace ArkScript::Ast
 
         explicit BlockScopeNode(const ArkScript::Token& token) 
         : Node(NodeType::BLOCK_SCOPE, token) {}
+    };
+
+    struct ModuleReadonlyDeclNode : public ModuleMemberNode
+    {
+        bool is_public{false};
+        std::string name;
+        std::string native_type;
+        std::unique_ptr<ExpressionNode> initializer;
+        ModuleReadonlyDeclNode() : ModuleMemberNode(NodeType::MODULE_READONLY_DECL){}
     };
 
     struct ModuleStmtNode : public Node

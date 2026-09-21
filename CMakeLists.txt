@@ -16,16 +16,14 @@ endif()
 
 include_directories(arkc/src)
 
-set(SOURCES
-    arkc/src/FileHandler.cpp
-    arkc/src/main.cpp
-)
-
-add_executable(arkc ${SOURCES}
+add_executable(arkc
     arkc/src/Compiler.cpp
     arkc/src/Lexer.cpp
     arkc/src/Parser.cpp
-    arkc/src/ParserHelpers.cpp)
+    arkc/src/ParserHelpers.cpp
+    arkc/src/FileHandler.cpp
+    arkc/src/main.cpp
+    arkc/src/WindowsHandler.cpp)
 
 set(BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/arkc/bin")
 set_target_properties(arkc PROPERTIES 
