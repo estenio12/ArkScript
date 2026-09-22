@@ -31,9 +31,9 @@ namespace ArkScript::Global
     inline std::string SOURCE_FILE = "";
     inline std::string OUTPUT_COMPILATION_FILE = "";
     
-    inline OUTPUT_FLAG PRINT_LEXER_OUTPUT = OUTPUT_FLAG::STDOUT;
+    inline OUTPUT_FLAG PRINT_LEXER_OUTPUT = OUTPUT_FLAG::NONE;
     inline std::string PRINT_LEXER_OUTPUT_FILE = "";
     
-    inline OUTPUT_FLAG PRINT_PARSER_OUTPUT = OUTPUT_FLAG::NONE;
+    inline OUTPUT_FLAG PRINT_PARSER_OUTPUT = OUTPUT_FLAG::STDOUT;
     inline std::string PRINT_PARSER_OUTPUT_FILE = "";               
 }

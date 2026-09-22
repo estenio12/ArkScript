@@ -40,14 +40,16 @@ std::string ArkScript::Parser::GenerateFilePathInfoByToken(const ArkScript::Toke
     std::string buffer = this->tokens->GetFilePath();
     buffer += "(Ln: " + std::to_string(token.line) + 
               ", Col: " + std::to_string(token.col) + 
-              ", Len: " + std::to_string(token.content.length()) + "): ";
+              ", Len: " + std::to_string(token.content.length()) + ")";
     return buffer;
 }
 
 [[noreturn]] void ArkScript::Parser::ThrowParserError(const ArkScript::Token& token, std::string message)
 {
     auto module_error = this->GenerateFilePathInfoByToken(token);
-    ArkScript::Output::ThrowFatalError(module_error, message);
+    Output::PrintError(module_error + ": ", false, false);
+    Output::Print(message);
+    exit(1);
 }
 
 ArkScript::Precedence ArkScript::Parser::GetTokenPrecedence(const ArkScript::Token& token) const

@@ -1,5 +1,7 @@
 module main;
 
+readonly t: str = "Hello world!";
+
 pub fun main() -> void:
     var t1: i8 = 223;
 end

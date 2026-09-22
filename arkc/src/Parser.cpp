@@ -23,6 +23,12 @@ std::unique_ptr<ArkScript::Ast::ProgramNode> ArkScript::Parser::Parse()
 {
     auto program = std::make_unique<ArkScript::Ast::ProgramNode>();
     program->module = this->ParseModuleDecl();
+
+    if(ArkScript::Global::PRINT_PARSER_OUTPUT == ArkScript::Global::OUTPUT_FLAG::STDOUT)
+    {
+        program->Dump();
+    }
+
     return program;
 }
 
