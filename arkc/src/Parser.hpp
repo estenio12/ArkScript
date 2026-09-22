@@ -19,7 +19,22 @@
 #include "Ast.hpp"
 
 namespace ArkScript
-{
+{   
+    enum class Precedence : uint8_t
+    {
+        LOWEST = 0,
+        ASSIGNMENT,  // =
+        LOGICAL_OR,  // ||
+        LOGICAL_AND, // &&
+        EQUALITY,    // ==, !=
+        RELATIONAL,  // <, <=, >, >=
+        SUM,         // +, -
+        PRODUCT,     // *, /
+        PREFIX,      // -x, !x
+        SCOPE,       // ::
+        CALL         // foo()
+    };
+
     class Parser
     {
         private:
@@ -37,6 +52,7 @@ namespace ArkScript
             const ArkScript::Token ExpectTokenContent(const std::string& content, const std::string& message);
             std::string GenerateFilePathInfoByToken(const ArkScript::Token& token);
             [[noreturn]] void ThrowParserError(const ArkScript::Token& token, std::string message);
+            Precedence GetTokenPrecedence(const ArkScript::Token& token) const;
 
         private:
             std::unique_ptr<ArkScript::Ast::ModuleDeclNode> ParseModuleDecl();
@@ -44,7 +60,6 @@ namespace ArkScript
             std::unique_ptr<ArkScript::Ast::VarDeclNode> ParseVarDecl();
             std::unique_ptr<ArkScript::Ast::FunDeclNode> ParseFunDecl(bool is_public = false);
             std::unique_ptr<ArkScript::Ast::ModuleReadonlyDeclNode> ParseModuleReadonlyDecl(bool is_public = false);
-            std::unique_ptr<ArkScript::Ast::ExpressionNode> ParseExpression();
             std::vector<std::unique_ptr<ArkScript::Ast::ParamNode>> ParseParameterList();
             std::unique_ptr<ArkScript::Ast::BlockScopeNode> ParseBlockScope();
             std::unique_ptr<ArkScript::Ast::StatementNode> ParseStatement();
@@ -53,5 +68,8 @@ namespace ArkScript
             std::unique_ptr<ArkScript::Ast::CallStmtNode> ParseCallStmt();
             std::unique_ptr<ArkScript::Ast::FunCallNode> ParseFunCall();
             std::unique_ptr<ArkScript::Ast::ArgumentList> ParseArgumentList();
+            std::unique_ptr<ArkScript::Ast::ExpressionNode> ParseExpression(Precedence precedence = Precedence::LOWEST);
+            std::unique_ptr<ArkScript::Ast::ExpressionNode> ParsePrefixExpression();
+            std::unique_ptr<ArkScript::Ast::ExpressionNode> ParseInfixExpression(std::unique_ptr<ArkScript::Ast::ExpressionNode> left);
     };
 }

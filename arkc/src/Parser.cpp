@@ -204,11 +204,6 @@ std::vector<std::unique_ptr<ArkScript::Ast::ParamNode>> ArkScript::Parser::Parse
     return parameters;
 }
 
-std::unique_ptr<ArkScript::Ast::ExpressionNode> ArkScript::Parser::ParseExpression()
-{
-    return std::make_unique<ArkScript::Ast::ExpressionNode>(ArkScript::Ast::NodeType::BINARY_EXPR);
-}
-
 std::unique_ptr<ArkScript::Ast::BlockScopeNode> ArkScript::Parser::ParseBlockScope()
 {
     auto tk_colon = this->ExpectTokenContent(ArkScript::DELIMITER::COLON, "Expected ':' to start block scope.");
@@ -335,3 +330,90 @@ std::unique_ptr<ArkScript::Ast::ArgumentList> ArkScript::Parser::ParseArgumentLi
 
     return arg_list;
 }
+
+std::unique_ptr<ArkScript::Ast::ExpressionNode> ArkScript::Parser::ParseExpression(Precedence precedence)
+{
+    auto left = this->ParsePrefixExpression();
+    if (!left) return nullptr;
+
+    while (precedence < this->GetTokenPrecedence(this->tokens->Peek()))
+    {
+        auto op_token = this->tokens->Peek();
+
+        if (op_token.content == ArkScript::OP_ARITHMETIC::ADD ||
+            op_token.content == ArkScript::OP_ARITHMETIC::SUB ||
+            op_token.content == ArkScript::OP_ARITHMETIC::MUL ||
+            op_token.content == ArkScript::OP_ARITHMETIC::DIV )
+        {
+            left = this->ParseInfixExpression(std::move(left));
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return left;
+}
+
+std::unique_ptr<ArkScript::Ast::ExpressionNode> ArkScript::Parser::ParsePrefixExpression()
+{
+    const auto& token = this->tokens->Peek();
+
+    // Sub-expression '(' <expression> ')'
+    if (token.content == ArkScript::DELIMITER::LPARAN)
+    {
+        this->tokens->Consume(); // Consume '('
+
+        auto expr = this->ParseExpression(Precedence::LOWEST);
+
+        this->ExpectTokenContent(ArkScript::DELIMITER::RPARAN, "Expected ')' to close expression.");
+        return expr;
+    }
+
+    // Function calling or variables/constants
+    if (token.type == ArkScript::TokenType::IDENTIFIER)
+    {
+        if (this->tokens->Peek(1).content == ArkScript::DELIMITER::LPARAN)
+        {
+            return this->ParseFunCall();
+        }
+
+        this->tokens->Consume();
+        return std::make_unique<ArkScript::Ast::IdentifierNode>(token);
+    }
+
+    // Literals Primitives
+    if (token.type == ArkScript::TokenType::LITERAL_INT    ||
+        token.type == ArkScript::TokenType::LITERAL_FLOAT  ||
+        token.type == ArkScript::TokenType::LITERAL_STRING ||
+        token.type == ArkScript::TokenType::LITERAL_BOOL   ||
+        token.type == ArkScript::TokenType::LITERAL_CHAR   )
+    {
+        this->tokens->Consume();
+        return std::make_unique<ArkScript::Ast::LiteralNode>(token);
+    }
+
+    this->ThrowParserError(token, "Unexpected token '" + token.content + "' in expression.");
+    return nullptr;
+}
+
+std::unique_ptr<ArkScript::Ast::ExpressionNode> ArkScript::Parser::ParseInfixExpression(
+    std::unique_ptr<ArkScript::Ast::ExpressionNode> left)
+{
+    auto op_token = this->tokens->Consume(); // Consume +, -, *, /
+    
+    auto binary_node = std::make_unique<ArkScript::Ast::BinaryExprNode>(op_token);
+    binary_node->op = op_token.content;
+    binary_node->left = std::move(left);
+
+    auto current_prec = this->GetTokenPrecedence(op_token);
+
+    binary_node->right = this->ParseExpression(current_prec);
+
+    return binary_node;
+}
+
+
+
+

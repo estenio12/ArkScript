@@ -17,6 +17,7 @@
 #include "Parser.hpp"
 #include "Ast.hpp"
 #include "Output.hpp"
+#include "Definitions.hpp"
 
 const ArkScript::Token ArkScript::Parser::ExpectTokenType(const ArkScript::TokenType& expected, const std::string& message)
 {
@@ -47,4 +48,26 @@ std::string ArkScript::Parser::GenerateFilePathInfoByToken(const ArkScript::Toke
 {
     auto module_error = this->GenerateFilePathInfoByToken(token);
     ArkScript::Output::ThrowFatalError(module_error, message);
+}
+
+ArkScript::Precedence ArkScript::Parser::GetTokenPrecedence(const ArkScript::Token& token) const
+{
+    if (token.content == ArkScript::OP_ARITHMETIC::ADD || 
+        token.content == ArkScript::OP_ARITHMETIC::SUB)
+    {
+        return ArkScript::Precedence::SUM;
+    }
+
+    if (token.content == ArkScript::OP_ARITHMETIC::MUL || 
+        token.content == ArkScript::OP_ARITHMETIC::DIV)
+    {
+        return ArkScript::Precedence::PRODUCT;
+    }
+
+    if (token.content == ArkScript::DELIMITER::SCOPEACCESS)
+    {
+        return ArkScript::Precedence::SCOPE;
+    }
+
+    return ArkScript::Precedence::LOWEST;
 }

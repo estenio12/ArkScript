@@ -41,6 +41,7 @@ namespace ArkScript::Ast
     struct ModuleStmtNode;
     struct BlockScopeNode;
     struct ModuleReadonlyDeclNode;
+    struct ArgumentList;
 
     enum class NodeType : uint8_t
     {
@@ -114,6 +115,8 @@ namespace ArkScript::Ast
         std::string name;
         explicit IdentifierNode(std::string id_name) 
             : ExpressionNode(NodeType::IDENTIFIER), name(std::move(id_name)) {}
+        explicit IdentifierNode(const ArkScript::Token& token) 
+        : ExpressionNode(NodeType::ARGUMENTO_LIST) { this->SetLocation(token); }
     };
 
     struct BinaryExprNode : public ExpressionNode
@@ -122,6 +125,8 @@ namespace ArkScript::Ast
         std::unique_ptr<ExpressionNode> left;
         std::unique_ptr<ExpressionNode> right;
         BinaryExprNode() : ExpressionNode(NodeType::BINARY_EXPR) {}
+        explicit BinaryExprNode(const ArkScript::Token& token) 
+        : ExpressionNode(NodeType::BINARY_EXPR) { this->SetLocation(token); }
     };
 
     struct FunCallNode : public ExpressionNode
@@ -129,12 +134,16 @@ namespace ArkScript::Ast
         std::string name;
         std::unique_ptr<ArgumentList> argument;
         FunCallNode() : ExpressionNode(NodeType::FUN_CALL) {}
+        explicit FunCallNode(const ArkScript::Token& token) 
+        : ExpressionNode(NodeType::FUN_CALL) { this->SetLocation(token); }
     };
 
     struct ArgumentList : public ExpressionNode
     {
         std::vector<std::unique_ptr<ExpressionNode>> arguments;
         ArgumentList() : ExpressionNode(NodeType::ARGUMENTO_LIST) {}
+        explicit ArgumentList(const ArkScript::Token& token) 
+        : ExpressionNode(NodeType::ARGUMENTO_LIST) { this->SetLocation(token); }
     };
 
     struct VarDeclNode : public StatementNode
@@ -144,6 +153,8 @@ namespace ArkScript::Ast
         std::string native_type;
         std::unique_ptr<ExpressionNode> initializer;
         VarDeclNode() : StatementNode(NodeType::VAR_DECL){}
+        explicit VarDeclNode(const ArkScript::Token& token) 
+        : StatementNode(NodeType::VAR_DECL) { this->SetLocation(token); }
     };
 
     struct AssignStmtNode : public StatementNode
@@ -151,18 +162,24 @@ namespace ArkScript::Ast
         std::string name;
         std::unique_ptr<ExpressionNode> expression;
         AssignStmtNode() : StatementNode(NodeType::ASSIGN_STMT) {}
+        explicit AssignStmtNode(const ArkScript::Token& token) 
+        : StatementNode(NodeType::ASSIGN_STMT) { this->SetLocation(token); }
     };
 
     struct CallStmtNode : public StatementNode
     {
         std::unique_ptr<FunCallNode> call;
         CallStmtNode() : StatementNode(NodeType::CALL_STMT) {}
+        explicit CallStmtNode(const ArkScript::Token& token) 
+        : StatementNode(NodeType::CALL_STMT) { this->SetLocation(token); }
     };
 
     struct ReturnStmtNode : public StatementNode
     {
         std::unique_ptr<ExpressionNode> expression;
         ReturnStmtNode() : StatementNode(NodeType::RETURN_STMT) {}
+        explicit ReturnStmtNode(const ArkScript::Token& token) 
+        : StatementNode(NodeType::RETURN_STMT) { this->SetLocation(token); }
     };
 
     struct ParamNode
@@ -181,6 +198,8 @@ namespace ArkScript::Ast
         std::unique_ptr<BlockScopeNode> body;
         std::vector<std::unique_ptr<ParamNode>> parameters;
         FunDeclNode() : ModuleMemberNode(NodeType::FUN_DECL) {}
+        explicit FunDeclNode(const ArkScript::Token& token) 
+        : ModuleMemberNode(NodeType::FUN_DECL) { this->SetLocation(token); }
     };
 
     struct BlockScopeNode : public Node
@@ -199,6 +218,8 @@ namespace ArkScript::Ast
         std::string native_type;
         std::unique_ptr<ExpressionNode> initializer;
         ModuleReadonlyDeclNode() : ModuleMemberNode(NodeType::MODULE_READONLY_DECL){}
+        explicit ModuleReadonlyDeclNode(const ArkScript::Token& token) 
+        : ModuleMemberNode(NodeType::MODULE_READONLY_DECL) { this->SetLocation(token); }
     };
 
     struct ModuleStmtNode : public Node
@@ -212,6 +233,8 @@ namespace ArkScript::Ast
         std::string name;
         std::unique_ptr<ModuleStmtNode> stmt;
         ModuleDeclNode() : Node(NodeType::MODULE_DECL) {}
+        explicit ModuleDeclNode(const ArkScript::Token& token) 
+        : Node(NodeType::MODULE_DECL) { this->SetLocation(token); }
     };
 
     struct ProgramNode : public Node
