@@ -226,7 +226,7 @@ std::unique_ptr<ArkScript::Ast::BlockScopeNode> ArkScript::Parser::ParseBlockSco
 
 std::unique_ptr<ArkScript::Ast::StatementNode> ArkScript::Parser::ParseStatement()
 {
-    auto token = this->tokens->Peek();
+    const auto& token = this->tokens->Peek();
 
     if(token.content == ArkScript::KEYWORDS::TCONST ||
        token.content == ArkScript::KEYWORDS::TVAR   )
@@ -338,7 +338,7 @@ std::unique_ptr<ArkScript::Ast::ExpressionNode> ArkScript::Parser::ParseExpressi
 
     while (precedence < this->GetTokenPrecedence(this->tokens->Peek()))
     {
-        auto op_token = this->tokens->Peek();
+        const auto& op_token = this->tokens->Peek();
 
         if (op_token.content == ArkScript::OP_ARITHMETIC::ADD ||
             op_token.content == ArkScript::OP_ARITHMETIC::SUB ||

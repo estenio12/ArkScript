@@ -30,15 +30,15 @@
 
 <return-stmt>    = "return" [ <expression> ] ";"
 
-<expression>     = <term> ( ( "+" | "-" ) <term> )*
+<expression>     = <prefix-expr> ( <infix-op> <expression> )*
 
-<term>           = <primary> ( ( "*" | "/" ) <primary> )*
+<prefix-expr>    = <fun-call>
+                   | <identifier>
+                   | <literal-int>
+                   | <literal-float>
+                   | <literal-string>
+                   | <literal-bool>
+                   | <literal-char>
+                   | "(" <expression> ")"
 
-<primary>        = <fun-call> 
-                 | <identifier> 
-                 | <literal-int> 
-                 | <literal-float>
-                 | <literal-string> 
-                 | <literal-bool>
-                 | <literal-char>
-                 | "(" <expression> ")"
+<infix-op>       = "+" | "-" | "*" | "/"

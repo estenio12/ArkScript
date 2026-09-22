@@ -64,6 +64,7 @@ namespace ArkScript::Ast
         LITERAL_BOOL,
         BLOCK_SCOPE,
         MODULE_READONLY_DECL,
+        UNDEFINED
     };
 
     struct Node
@@ -91,16 +92,19 @@ namespace ArkScript::Ast
     struct ModuleMemberNode : public Node
     {
         explicit ModuleMemberNode(NodeType t) : Node(t) {}
+        explicit ModuleMemberNode(NodeType t, const ArkScript::Token& token) : Node(t, token) {}
     };
 
     struct ExpressionNode : public Node
     {
         explicit ExpressionNode(NodeType t) : Node(t) {}
+        explicit ExpressionNode(NodeType t, const ArkScript::Token& token) : Node(t, token) {}
     };
 
     struct StatementNode : public Node
     {
         explicit StatementNode(NodeType t) : Node(t) {}
+        explicit StatementNode(NodeType t, const ArkScript::Token& token) : Node(t, token) {}
     };
 
     struct LiteralNode : public ExpressionNode
@@ -108,6 +112,8 @@ namespace ArkScript::Ast
         std::string value;
         explicit LiteralNode(NodeType t, std::string val) 
             : ExpressionNode(t), value(std::move(val)) {}
+        explicit LiteralNode(const ArkScript::Token& token) 
+            : ExpressionNode(NodeType::UNDEFINED, token), value(token.content) {}
     };
 
     struct IdentifierNode : public ExpressionNode
@@ -126,7 +132,7 @@ namespace ArkScript::Ast
         std::unique_ptr<ExpressionNode> right;
         BinaryExprNode() : ExpressionNode(NodeType::BINARY_EXPR) {}
         explicit BinaryExprNode(const ArkScript::Token& token) 
-        : ExpressionNode(NodeType::BINARY_EXPR) { this->SetLocation(token); }
+            : ExpressionNode(NodeType::BINARY_EXPR, token) {}
     };
 
     struct FunCallNode : public ExpressionNode
@@ -135,7 +141,7 @@ namespace ArkScript::Ast
         std::unique_ptr<ArgumentList> argument;
         FunCallNode() : ExpressionNode(NodeType::FUN_CALL) {}
         explicit FunCallNode(const ArkScript::Token& token) 
-        : ExpressionNode(NodeType::FUN_CALL) { this->SetLocation(token); }
+            : ExpressionNode(NodeType::FUN_CALL, token) {}
     };
 
     struct ArgumentList : public ExpressionNode
@@ -143,7 +149,7 @@ namespace ArkScript::Ast
         std::vector<std::unique_ptr<ExpressionNode>> arguments;
         ArgumentList() : ExpressionNode(NodeType::ARGUMENTO_LIST) {}
         explicit ArgumentList(const ArkScript::Token& token) 
-        : ExpressionNode(NodeType::ARGUMENTO_LIST) { this->SetLocation(token); }
+            : ExpressionNode(NodeType::ARGUMENTO_LIST, token) {}
     };
 
     struct VarDeclNode : public StatementNode
@@ -154,7 +160,7 @@ namespace ArkScript::Ast
         std::unique_ptr<ExpressionNode> initializer;
         VarDeclNode() : StatementNode(NodeType::VAR_DECL){}
         explicit VarDeclNode(const ArkScript::Token& token) 
-        : StatementNode(NodeType::VAR_DECL) { this->SetLocation(token); }
+            : StatementNode(NodeType::VAR_DECL, token) {}
     };
 
     struct AssignStmtNode : public StatementNode
@@ -163,7 +169,7 @@ namespace ArkScript::Ast
         std::unique_ptr<ExpressionNode> expression;
         AssignStmtNode() : StatementNode(NodeType::ASSIGN_STMT) {}
         explicit AssignStmtNode(const ArkScript::Token& token) 
-        : StatementNode(NodeType::ASSIGN_STMT) { this->SetLocation(token); }
+            : StatementNode(NodeType::ASSIGN_STMT, token) {}
     };
 
     struct CallStmtNode : public StatementNode
@@ -171,7 +177,7 @@ namespace ArkScript::Ast
         std::unique_ptr<FunCallNode> call;
         CallStmtNode() : StatementNode(NodeType::CALL_STMT) {}
         explicit CallStmtNode(const ArkScript::Token& token) 
-        : StatementNode(NodeType::CALL_STMT) { this->SetLocation(token); }
+            : StatementNode(NodeType::CALL_STMT, token) {}
     };
 
     struct ReturnStmtNode : public StatementNode
@@ -179,7 +185,7 @@ namespace ArkScript::Ast
         std::unique_ptr<ExpressionNode> expression;
         ReturnStmtNode() : StatementNode(NodeType::RETURN_STMT) {}
         explicit ReturnStmtNode(const ArkScript::Token& token) 
-        : StatementNode(NodeType::RETURN_STMT) { this->SetLocation(token); }
+            : StatementNode(NodeType::RETURN_STMT, token) {}
     };
 
     struct ParamNode
@@ -199,7 +205,7 @@ namespace ArkScript::Ast
         std::vector<std::unique_ptr<ParamNode>> parameters;
         FunDeclNode() : ModuleMemberNode(NodeType::FUN_DECL) {}
         explicit FunDeclNode(const ArkScript::Token& token) 
-        : ModuleMemberNode(NodeType::FUN_DECL) { this->SetLocation(token); }
+            : ModuleMemberNode(NodeType::FUN_DECL, token) {}
     };
 
     struct BlockScopeNode : public Node
@@ -208,7 +214,7 @@ namespace ArkScript::Ast
         BlockScopeNode() : Node(NodeType::BLOCK_SCOPE) {}
 
         explicit BlockScopeNode(const ArkScript::Token& token) 
-        : Node(NodeType::BLOCK_SCOPE, token) {}
+            : Node(NodeType::BLOCK_SCOPE, token) {}
     };
 
     struct ModuleReadonlyDeclNode : public ModuleMemberNode
@@ -219,13 +225,15 @@ namespace ArkScript::Ast
         std::unique_ptr<ExpressionNode> initializer;
         ModuleReadonlyDeclNode() : ModuleMemberNode(NodeType::MODULE_READONLY_DECL){}
         explicit ModuleReadonlyDeclNode(const ArkScript::Token& token) 
-        : ModuleMemberNode(NodeType::MODULE_READONLY_DECL) { this->SetLocation(token); }
+            : ModuleMemberNode(NodeType::MODULE_READONLY_DECL, token) {}
     };
 
     struct ModuleStmtNode : public Node
     {
         std::vector<std::unique_ptr<ModuleMemberNode>> stmts;
         ModuleStmtNode() : Node(NodeType::MODULE_STMT) {}
+        explicit ModuleStmtNode(const ArkScript::Token& token) 
+            : Node(NodeType::MODULE_STMT, token) {}
     };
 
     struct ModuleDeclNode : public Node
@@ -234,7 +242,7 @@ namespace ArkScript::Ast
         std::unique_ptr<ModuleStmtNode> stmt;
         ModuleDeclNode() : Node(NodeType::MODULE_DECL) {}
         explicit ModuleDeclNode(const ArkScript::Token& token) 
-        : Node(NodeType::MODULE_DECL) { this->SetLocation(token); }
+            : Node(NodeType::MODULE_STMT, token) {}
     };
 
     struct ProgramNode : public Node
