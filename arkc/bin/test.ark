@@ -1,7 +1,56 @@
+module math_utils;
+
+readonly PI: str = "3.14159";
+readonly MAX_ITERATIONS: i8 = 100;
+
+pub fun calculate_area() -> void:
+    var radius: i8 = 10;
+    var factor: i8 = 2;
+    var offset: i8 = 5;
+end
+
+pub fun process_data() -> void:
+    var a1: i8 = 1;
+    var a2: i8 = 2;
+    var a3: i8 = 3;
+    var a4: i8 = 4;
+    var a5: i8 = 5;
+end
+
+module physics_engine;
+
+readonly GRAVITY: str = "9.81";
+readonly VELOCITY_LIMIT: i8 = 120;
+
+pub fun apply_forces() -> void:
+    var force1: i8 = 50;
+    var force2: i8 = 75;
+    var drag: i8 = 12;
+    var friction: i8 = 3;
+end
+
+pub fun update_positions() -> void:
+    var pos_x: i8 = 100;
+    var pos_y: i8 = 200;
+    var pos_z: i8 = 50;
+    var delta_t: i8 = 16;
+end
+
 module main;
 
-readonly t: str = "Hello world!";
+readonly WELCOME_MSG: str = "Iniciando sistema ArkScript...";
+readonly SYSTEM_VERSION: str = "v0.1";
+
+pub fun init_system() -> void:
+    var step1: i8 = 1;
+    var step2: i8 = 2;
+    var step3: i8 = 3;
+    var status: i8 = 0;
+end
 
 pub fun main() -> void:
-    var t1: i8 = 223;
+    var config_flag: i8 = 1;
+    var debug_mode: i8 = 0;
+    var max_threads: i8 = 8;
+    var log_level: i8 = 2;
 end

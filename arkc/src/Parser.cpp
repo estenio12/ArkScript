@@ -77,6 +77,11 @@ std::unique_ptr<ArkScript::Ast::ModuleStmtNode> ArkScript::Parser::ParseModuleSt
         }
         else
         {
+            if(token.content == ArkScript::KEYWORDS::TMODULE)
+            {
+                this->ThrowParserError(token, "Expected one module per file.");
+            }
+
             this->ThrowParserError(token, "Expected 'readonly' or 'fun' declaration in module body.");
         }
     }
