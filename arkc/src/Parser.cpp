@@ -21,7 +21,7 @@
 
 std::unique_ptr<ArkScript::Ast::ProgramNode> ArkScript::Parser::Parse()
 {
-    auto program = std::make_unique<ArkScript::Ast::ProgramNode>();
+    auto program = std::make_unique<ArkScript::Ast::ProgramNode>(this->tokens->GetFilePath());
     program->module = this->ParseModuleDecl();
 
     if(ArkScript::Global::PRINT_PARSER_OUTPUT == ArkScript::Global::OUTPUT_FLAG::STDOUT)

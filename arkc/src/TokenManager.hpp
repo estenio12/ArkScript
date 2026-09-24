@@ -72,6 +72,7 @@ namespace ArkScript
             }
 
         public:
+            std::string GetFilePath() { return this->source_file_path; }
             void PushToken(Token token){ this->tokens.push_back(token); }
             bool IsEOF() const { return cursor >= tokens.size() || this->Peek().type == TokenType::END_OF_FILE; }
         
@@ -133,8 +134,6 @@ namespace ArkScript
                 else
                     ArkScript::Output::Print(ss.str());
             }
-
-            std::string GetFilePath() { return this->source_file_path; }
 
         private:
             std::string TokenTypeString(TokenType type)

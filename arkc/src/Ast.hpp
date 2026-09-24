@@ -71,14 +71,14 @@ namespace ArkScript::Ast
     struct Node
     {
         NodeType type;
-        std::string file_path;
         uint32_t line{0};
         uint32_t col{0};
         uint32_t length{0};
 
         explicit Node(NodeType t) : type(t) {}
         Node(NodeType type, const ArkScript::Token& token) 
-            : type(type), line(token.line), col(token.col), length(token.content.length()) {}
+            : type(type), line(token.line), col(token.col), 
+              length(token.content.length()) {}
         virtual ~Node() = default;
         virtual void Dump(bool is_last = true, const std::string& prefix = "") const = 0;
 
@@ -407,8 +407,10 @@ namespace ArkScript::Ast
 
     struct ProgramNode : public Node
     {
+        std::string source_file_path;
         std::unique_ptr<ModuleDeclNode> module;
-        ProgramNode() : Node(NodeType::PROGRAM) {}
+        ProgramNode(std::string source_file_path) : 
+            Node(NodeType::PROGRAM), source_file_path(source_file_path) {}
 
         void Dump(bool is_last = true, const std::string& prefix = "") const override
         {
