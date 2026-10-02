@@ -26,7 +26,9 @@ add_executable(arkc
     arkc/src/ParserHelpers.cpp
     arkc/src/FileHandler.cpp
     arkc/src/main.cpp
-    arkc/src/WindowsHandler.cpp)
+    arkc/src/WindowsHandler.cpp
+    arkc/src/Analyzer.cpp
+    arkc/src/AnalyzerHelpers.cpp)
 
 set(BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/arkc/bin")
 set_target_properties(arkc PROPERTIES 

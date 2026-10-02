@@ -19,9 +19,9 @@
 #include "Definitions.hpp"
 
 
-std::unique_ptr<ArkScript::Ast::ProgramNode> ArkScript::Parser::Parse()
+std::shared_ptr<ArkScript::Ast::ProgramNode> ArkScript::Parser::Parse()
 {
-    auto program = std::make_unique<ArkScript::Ast::ProgramNode>(this->tokens->GetFilePath());
+    auto program = std::make_shared<ArkScript::Ast::ProgramNode>(this->tokens->GetFilePath());
     program->module = this->ParseModuleDecl();
 
     if(ArkScript::Global::PRINT_PARSER_OUTPUT == ArkScript::Global::OUTPUT_FLAG::STDOUT)
@@ -110,7 +110,7 @@ std::unique_ptr<ArkScript::Ast::VarDeclNode> ArkScript::Parser::ParseVarDecl()
     this->ExpectTokenContent(ArkScript::DELIMITER::COLON, "Expected ':' after identifier.");
     
     auto tk_type = this->ExpectTokenType(ArkScript::TokenType::KEYWORD, "Expected a type definition after identifier.");
-    var_decl->native_type = tk_type.content;
+    var_decl->type = tk_type.content;
 
     if(this->tokens->Peek().content == ArkScript::OP_ASSIGNMENT::ASSIGN)
     {
@@ -167,7 +167,7 @@ std::unique_ptr<ArkScript::Ast::ModuleReadonlyDeclNode> ArkScript::Parser::Parse
     this->ExpectTokenContent(ArkScript::DELIMITER::COLON, "Expected ':' after identifier.");
     
     auto tk_type = this->ExpectTokenType(ArkScript::TokenType::KEYWORD, "Expected a type definition after identifier.");
-    readonly_decl->native_type = tk_type.content;
+    readonly_decl->type = tk_type.content;
 
     this->ExpectTokenContent(ArkScript::OP_ASSIGNMENT::ASSIGN, "Readonly declaration must be initialized with an assignment '='.");
 

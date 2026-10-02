@@ -45,13 +45,13 @@ namespace ArkScript
             ~Parser() = default;
 
         public:
-            std::unique_ptr<ArkScript::Ast::ProgramNode> Parse();
+            std::shared_ptr<ArkScript::Ast::ProgramNode> Parse();
         
         private:
             const ArkScript::Token ExpectTokenType(const ArkScript::TokenType& type, const std::string& message);
             const ArkScript::Token ExpectTokenContent(const std::string& content, const std::string& message);
-            std::string GenerateFilePathInfoByToken(const ArkScript::Token& token);
-            [[noreturn]] void ThrowParserError(const ArkScript::Token& token, std::string message);
+            std::string GenerateFilePathInfoByToken(const ArkScript::Token& token) const;
+            [[noreturn]] void ThrowParserError(const ArkScript::Token& token, const std::string& message);
             Precedence GetTokenPrecedence(const ArkScript::Token& token) const;
 
         private:

@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <vector>
 #include <memory>
+#include "Token.hpp"
 
 namespace ArkScript::Ast
 {
@@ -68,6 +69,18 @@ namespace ArkScript::Ast
         UNDEFINED
     };
 
+    struct SourceLocation
+    {
+        uint32_t line{0};
+        uint32_t col{0};
+        uint32_t length{0};
+
+        public:
+            SourceLocation() { }
+            SourceLocation(uint32_t line, uint32_t col, uint32_t length):
+                line(line), col(col), length(length) { }
+    };
+
     struct Node
     {
         NodeType type;
@@ -88,6 +101,12 @@ namespace ArkScript::Ast
             this->line = token.line;
             this->col = token.col;
             this->length = token.length();
+        }
+
+        SourceLocation GetLocation() 
+        { 
+            SourceLocation sl = { line = this->line, col = this->col, length = this->length }; 
+            return sl;
         }
     };
 
@@ -216,7 +235,7 @@ namespace ArkScript::Ast
     {
         bool is_constant{false};
         std::string name;
-        std::string native_type;
+        std::string type;
         std::unique_ptr<ExpressionNode> initializer;
         VarDeclNode() : StatementNode(NodeType::VAR_DECL){}
         explicit VarDeclNode(const ArkScript::Token& token) 
@@ -226,7 +245,7 @@ namespace ArkScript::Ast
         {
             std::cout << prefix << (is_last ? "└── " : "├── ") 
                       << "[VarDeclNode] " << (is_constant ? "const " : "var ") 
-                      << name << " : " << (native_type.empty() ? "auto" : native_type) << "\n";
+                      << name << " : " << (type.empty() ? "auto" : type) << "\n";
 
             std::string new_prefix = prefix + (is_last ? "    " : "│   ");
             if (initializer) initializer->Dump(true, new_prefix);
@@ -350,7 +369,7 @@ namespace ArkScript::Ast
     {
         bool is_public{false};
         std::string name;
-        std::string native_type;
+        std::string type;
         std::unique_ptr<ExpressionNode> initializer;
         ModuleReadonlyDeclNode() : ModuleMemberNode(NodeType::MODULE_READONLY_DECL){}
         explicit ModuleReadonlyDeclNode(const ArkScript::Token& token) 
@@ -360,7 +379,7 @@ namespace ArkScript::Ast
         {
             std::cout << prefix << (is_last ? "└── " : "├── ") 
                       << "[ModuleReadonlyDeclNode] readonly " << (is_public ? "pub " : "") 
-                      << name << " : " << native_type << "\n";
+                      << name << " : " << type << "\n";
 
             std::string new_prefix = prefix + (is_last ? "    " : "│   ");
             if (initializer) initializer->Dump(true, new_prefix);

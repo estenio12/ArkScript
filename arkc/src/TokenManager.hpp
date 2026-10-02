@@ -24,38 +24,10 @@
 #include "Output.hpp"
 #include "Global.hpp"
 #include "Tools.hpp"
+#include "Token.hpp"
 
 namespace ArkScript
 {
-    enum class TokenType : uint8_t
-    {
-        LITERAL_INT,
-        LITERAL_FLOAT,
-        LITERAL_BOOL,
-        LITERAL_CHAR,
-        LITERAL_STRING,
-        KEYWORD,
-        OP_ARITHMETIC,
-        OP_LOGICAL,
-        OP_ASSIGNMENT,
-        OP_COMPARISON,
-        OP_BITWISE,
-        DELIMITER,
-        IDENTIFIER,
-        END_OF_FILE, 
-        UNKNOWN
-    };
-
-    struct Token
-    {
-        std::string content;
-        TokenType type;
-        uint32_t line;
-        uint32_t col;
-
-        size_t length() const { return content.length(); }
-    };
-
     class TokenManager
     {
         private:

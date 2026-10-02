@@ -36,6 +36,8 @@ int main(int argc, char** argv)
     {
         ArkScript::Compiler(ArkScript::Global::SOURCE_FILE);
 
+        // TODO: auto safe_js = std::make_unique<ArkScript::JSCodeGenerator>(ir_optimizer)->Build();
+
         auto timer_end = std::chrono::high_resolution_clock::now();
         auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(timer_end - timer_start);
         ArkScript::Output::Print("\nCompilation completed in: " + std::to_string(elapsed_time.count()) + "ms\n");

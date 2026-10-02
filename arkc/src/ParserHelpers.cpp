@@ -35,7 +35,7 @@ const ArkScript::Token ArkScript::Parser::ExpectTokenContent(const std::string& 
     this->ThrowParserError(token, message);
 }
 
-std::string ArkScript::Parser::GenerateFilePathInfoByToken(const ArkScript::Token& token)
+std::string ArkScript::Parser::GenerateFilePathInfoByToken(const ArkScript::Token& token) const
 {
     std::string buffer = this->tokens->GetFilePath();
     buffer += "(Ln: " + std::to_string(token.line) + 
@@ -44,12 +44,12 @@ std::string ArkScript::Parser::GenerateFilePathInfoByToken(const ArkScript::Toke
     return buffer;
 }
 
-[[noreturn]] void ArkScript::Parser::ThrowParserError(const ArkScript::Token& token, std::string message)
+[[noreturn]] void ArkScript::Parser::ThrowParserError(const ArkScript::Token& token, const std::string& message)
 {
     auto module_error = this->GenerateFilePathInfoByToken(token);
     Output::PrintError(module_error + ": ", false, false);
     Output::Print(message);
-    exit(1);
+    std::exit(EXIT_FAILURE);
 }
 
 ArkScript::Precedence ArkScript::Parser::GetTokenPrecedence(const ArkScript::Token& token) const
