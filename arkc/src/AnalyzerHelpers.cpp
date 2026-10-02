@@ -28,9 +28,8 @@
 std::string ArkScript::Analyzer::GenerateFilePathInfoBySourceLocation(const ArkScript::Ast::SourceLocation& src_loc) const
 {
     std::string buffer = this->ast->source_file_path;
-    buffer += "(Ln: " + std::to_string(src_loc.line) + 
-              ", Col: " + std::to_string(src_loc.col) + 
-              ", Len: " + std::to_string(src_loc.length) + ")";
+    buffer += ":" + std::to_string(src_loc.line) + 
+              ":" + std::to_string(src_loc.col);
     return buffer;
 }
 

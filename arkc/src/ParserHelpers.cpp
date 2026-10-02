@@ -38,9 +38,8 @@ const ArkScript::Token ArkScript::Parser::ExpectTokenContent(const std::string& 
 std::string ArkScript::Parser::GenerateFilePathInfoByToken(const ArkScript::Token& token) const
 {
     std::string buffer = this->tokens->GetFilePath();
-    buffer += "(Ln: " + std::to_string(token.line) + 
-              ", Col: " + std::to_string(token.col) + 
-              ", Len: " + std::to_string(token.content.length()) + ")";
+    buffer += ":" + std::to_string(token.line) + 
+              ":" + std::to_string(token.col);
     return buffer;
 }
 

@@ -35,6 +35,7 @@ namespace ArkScript
         private:
             void MakeHoisting();
             void FullAnalyze();
+            void AnalyzeFunction(ArkScript::Ast::FunDeclNode& stmt);
 
         // # Auxiliar functions
         private:

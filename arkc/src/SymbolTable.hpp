@@ -31,7 +31,6 @@ namespace ArkScript
     struct Symbol
     {
         std::string name;
-        std::string scope_name = "GLOBAL";
         std::string type;
         SymbolKind kind;
         uint32_t depth = 0;
