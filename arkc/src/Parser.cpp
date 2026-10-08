@@ -155,10 +155,10 @@ std::unique_ptr<ArkScript::Ast::FunDeclNode> ArkScript::Parser::ParseFunDecl(boo
     return fun_decl;
 }
 
-std::unique_ptr<ArkScript::Ast::ModuleReadonlyDeclNode> ArkScript::Parser::ParseModuleReadonlyDecl(bool is_public)
+std::unique_ptr<ArkScript::Ast::ReadonlyDeclNode> ArkScript::Parser::ParseModuleReadonlyDecl(bool is_public)
 {
     auto tk_readonly = this->ExpectTokenContent(ArkScript::KEYWORDS::TREADONLY, "Expected 'readonly' keyword to start declaration.");
-    auto readonly_decl = std::make_unique<ArkScript::Ast::ModuleReadonlyDeclNode>(tk_readonly);
+    auto readonly_decl = std::make_unique<ArkScript::Ast::ReadonlyDeclNode>(tk_readonly);
     readonly_decl->is_public = is_public;
 
     auto tk_identifier = this->ExpectTokenType(ArkScript::TokenType::IDENTIFIER, "Expected identifier after 'readonly'.");

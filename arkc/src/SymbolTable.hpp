@@ -25,6 +25,7 @@ namespace ArkScript
     {
         FUNCTION,
         VARIABLE,
+        CONSTANT,
         MODULE
     };
 

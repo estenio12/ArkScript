@@ -21,6 +21,12 @@
 
 namespace ArkScript
 {
+    struct ExprContext
+    {
+        std::string expected_type = "";
+        bool is_const_eval = false;
+    };
+
     class Analyzer
     {
         private:
@@ -35,7 +41,11 @@ namespace ArkScript
         private:
             void MakeHoisting();
             void FullAnalyze();
-            void AnalyzeFunction(ArkScript::Ast::FunDeclNode& stmt);
+            void AnalyzeFunction(ArkScript::Ast::FunDeclNode& fun_decl);
+            void AnalyzeBlockScope(ArkScript::Ast::BlockScopeNode& body);
+            void AnalyzeStmt(ArkScript::Ast::StatementNode& stmts);
+            void AnalyzeVarDecl(ArkScript::Ast::VarDeclNode& const_decl);
+            void AnalyzeExpression(ArkScript::Ast::ExpressionNode& expr, const ArkScript::ExprContext& ctx);
 
         // # Auxiliar functions
         private:

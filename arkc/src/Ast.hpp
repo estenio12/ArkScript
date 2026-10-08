@@ -42,7 +42,7 @@ namespace ArkScript::Ast
     struct ProgramNode;
     struct ModuleStmtNode;
     struct BlockScopeNode;
-    struct ModuleReadonlyDeclNode;
+    struct ReadonlyDeclNode;
     struct ArgumentList;
 
     enum class NodeType : uint8_t
@@ -65,7 +65,7 @@ namespace ArkScript::Ast
         LITERAL_STRING,
         LITERAL_BOOL,
         BLOCK_SCOPE,
-        MODULE_READONLY_DECL,
+        READONLY_DECL,
         UNDEFINED
     };
 
@@ -365,20 +365,20 @@ namespace ArkScript::Ast
         }
     };
 
-    struct ModuleReadonlyDeclNode : public ModuleMemberNode
+    struct ReadonlyDeclNode : public ModuleMemberNode
     {
         bool is_public{false};
         std::string name;
         std::string type;
         std::unique_ptr<ExpressionNode> initializer;
-        ModuleReadonlyDeclNode() : ModuleMemberNode(NodeType::MODULE_READONLY_DECL){}
-        explicit ModuleReadonlyDeclNode(const ArkScript::Token& token) 
-            : ModuleMemberNode(NodeType::MODULE_READONLY_DECL, token) {}
+        ReadonlyDeclNode() : ModuleMemberNode(NodeType::READONLY_DECL){}
+        explicit ReadonlyDeclNode(const ArkScript::Token& token) 
+            : ModuleMemberNode(NodeType::READONLY_DECL, token) {}
 
         void Dump(bool is_last = true, const std::string& prefix = "") const override
         {
             std::cout << prefix << (is_last ? "└── " : "├── ") 
-                      << "[ModuleReadonlyDeclNode] readonly " << (is_public ? "pub " : "") 
+                      << "[ReadonlyDeclNode] readonly " << (is_public ? "pub " : "") 
                       << name << " : " << type << "\n";
 
             std::string new_prefix = prefix + (is_last ? "    " : "│   ");
