@@ -15,6 +15,7 @@
  */
 #include <memory>
 #include "Analyzer.hpp"
+#include "Definitions.hpp"
 
 std::shared_ptr<ArkScript::SymbolTable> ArkScript::Analyzer::Analyze()
 {
@@ -243,7 +244,6 @@ void ArkScript::Analyzer::AnalyzeExpression(ArkScript::Ast::ExpressionNode& expr
         {
             auto* bin_node = static_cast<ArkScript::Ast::BinaryOpNode*>(&expr);
             
-            // Repassa o mesmo contexto para os operandos esquerdo e direito
             this->AnalyzeExpression(*bin_node->left, ctx);
             this->AnalyzeExpression(*bin_node->right, ctx);
 
@@ -251,9 +251,57 @@ void ArkScript::Analyzer::AnalyzeExpression(ArkScript::Ast::ExpressionNode& expr
         }
         break;
 
-        case ArkScript::Ast::NodeType::LITERAL:
+        case ArkScript::Ast::NodeType::LITERAL_BOOL:
+        case ArkScript::Ast::NodeType::LITERAL_CHAR:
+        case ArkScript::Ast::NodeType::LITERAL_FLOAT:
+        case ArkScript::Ast::NodeType::LITERAL_INT:
+        case ArkScript::Ast::NodeType::LITERAL_STRING:
         {
-            // Valida se o tipo do literal bate com ctx.expected_type (se informado)
+            if (!ctx.expected_type.empty())
+            {
+                bool is_compatible = false;
+                std::string actual_type = "";
+
+                switch (expr.type)
+                {
+                    case ArkScript::Ast::NodeType::LITERAL_BOOL:
+                        actual_type = ArkScript::KEYWORDS::TBOOL;
+                        is_compatible = (ctx.expected_type == ArkScript::KEYWORDS::TBOOL);
+                        break;
+
+                    case ArkScript::Ast::NodeType::LITERAL_CHAR:
+                        actual_type = ArkScript::KEYWORDS::TCHAR;
+                        is_compatible = (ctx.expected_type == ArkScript::KEYWORDS::TCHAR);
+                        break;
+
+                    case ArkScript::Ast::NodeType::LITERAL_STRING:
+                        actual_type = ArkScript::KEYWORDS::TSTR;
+                        is_compatible = (ctx.expected_type == ArkScript::KEYWORDS::TSTR);
+                        break;
+
+                    case ArkScript::Ast::NodeType::LITERAL_INT:
+                        actual_type = "integer";
+                        is_compatible = (ctx.expected_type == ArkScript::KEYWORDS::TI8   || ctx.expected_type == ArkScript::KEYWORDS::TI16  ||
+                                         ctx.expected_type == ArkScript::KEYWORDS::TI32  || ctx.expected_type == ArkScript::KEYWORDS::TI64  ||
+                                         ctx.expected_type == ArkScript::KEYWORDS::TUI8  || ctx.expected_type == ArkScript::KEYWORDS::TUI16 ||
+                                         ctx.expected_type == ArkScript::KEYWORDS::TUI32 || ctx.expected_type == ArkScript::KEYWORDS::TUI64 );
+                        break;
+
+                    case ArkScript::Ast::NodeType::LITERAL_FLOAT:
+                        actual_type = "float";
+                        is_compatible = (ctx.expected_type == ArkScript::KEYWORDS::TF32 || ctx.expected_type == ArkScript::KEYWORDS::TF64);
+                        break;
+
+                    default:
+                        break;
+                }
+
+                if (!is_compatible)
+                {
+                    this->ThrowError(expr.GetLocation(), 
+                        "Cannot implicitly convert '" + actual_type + "' to '" + ctx.expected_type + "'.");
+                }
+            }
         }
         break;
 
@@ -267,11 +315,17 @@ void ArkScript::Analyzer::AnalyzeExpression(ArkScript::Ast::ExpressionNode& expr
                 this->ThrowError(id_node->GetLocation(), "Undeclared identifier '" + id_node->name + "'.");
             }
 
-            // Se for um contexto de const_eval, só aceita identificadores que também sejam CONSTANTES
+            // In constant context, only constants identifiers are allowed
             if (ctx.is_const_eval && sym->kind != ArkScript::SymbolKind::CONSTANT)
             {
                 this->ThrowError(id_node->GetLocation(), 
                     "Cannot reference non-constant variable '" + id_node->name + "' inside a constant expression.");
+            }
+
+            if(!ctx.expected_type.empty() && ctx.expected_type != sym->type)
+            {
+                this->ThrowError(expr.GetLocation(), 
+                        "Cannot implicitly convert '" + sym->type + "' to '" + ctx.expected_type + "'.");
             }
         }
         break;
