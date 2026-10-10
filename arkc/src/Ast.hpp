@@ -29,7 +29,7 @@ namespace ArkScript::Ast
     struct StatementNode;
     struct LiteralNode;
     struct IdentifierNode;
-    struct BinaryExprNode;
+    struct BinaryOpNode;
     struct AssignStmtNode;
     struct CallStmtNode;
     struct VarDeclNode;
@@ -55,7 +55,7 @@ namespace ArkScript::Ast
         ASSIGN_STMT,
         CALL_STMT,
         RETURN_STMT,
-        BINARY_EXPR,
+        BIN_OP,
         FUN_CALL,
         ARGUMENTO_LIST,
         IDENTIFIER,
@@ -123,6 +123,7 @@ namespace ArkScript::Ast
 
     struct ExpressionNode : public Node
     {
+        std::string InferredType;
         explicit ExpressionNode(NodeType t) : Node(t) {}
         explicit ExpressionNode(NodeType t, const ArkScript::Token& token) : Node(t, token) {}
 
@@ -173,19 +174,19 @@ namespace ArkScript::Ast
         }
     };
 
-    struct BinaryExprNode : public ExpressionNode
+    struct BinaryOpNode : public ExpressionNode
     {
         std::string op;
         std::unique_ptr<ExpressionNode> left;
         std::unique_ptr<ExpressionNode> right;
-        BinaryExprNode() : ExpressionNode(NodeType::BINARY_EXPR) {}
-        explicit BinaryExprNode(const ArkScript::Token& token) 
-            : ExpressionNode(NodeType::BINARY_EXPR, token) {}
+        BinaryOpNode() : ExpressionNode(NodeType::BIN_OP) {}
+        explicit BinaryOpNode(const ArkScript::Token& token) 
+            : ExpressionNode(NodeType::BIN_OP, token) {}
 
         void Dump(bool is_last = true, const std::string& prefix = "") const override
         {
             std::cout << prefix << (is_last ? "└── " : "├── ") 
-                      << "[BinaryExprNode] op: '" << op << "'\n";
+                      << "[BinaryOpNode] op: '" << op << "'\n";
 
             std::string new_prefix = prefix + (is_last ? "    " : "│   ");
             if (left)  left->Dump(false, new_prefix);
@@ -216,7 +217,7 @@ namespace ArkScript::Ast
     struct FunCallNode : public ExpressionNode
     {
         std::string name;
-        std::unique_ptr<ArgumentList> argument;
+        std::unique_ptr<ArgumentList> arg_list;
         FunCallNode() : ExpressionNode(NodeType::FUN_CALL) {}
         explicit FunCallNode(const ArkScript::Token& token) 
             : ExpressionNode(NodeType::FUN_CALL, token) {}
@@ -227,7 +228,7 @@ namespace ArkScript::Ast
                       << "[FunCallNode] name: " << name << "\n";
 
             std::string new_prefix = prefix + (is_last ? "    " : "│   ");
-            if (argument) argument->Dump(true, new_prefix);
+            if (arg_list) arg_list->Dump(true, new_prefix);
         }
     };
 

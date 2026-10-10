@@ -27,6 +27,12 @@ namespace ArkScript
         bool is_const_eval = false;
     };
 
+    struct BlockScopeContext
+    {
+        std::string expected_type = "";
+        ArkScript::SymbolKind kind = ArkScript::SymbolKind::FUNCTION;
+    };
+
     class Analyzer
     {
         private:
@@ -42,10 +48,12 @@ namespace ArkScript
             void MakeHoisting();
             void FullAnalyze();
             void AnalyzeFunction(ArkScript::Ast::FunDeclNode& fun_decl);
-            void AnalyzeBlockScope(ArkScript::Ast::BlockScopeNode& body);
-            void AnalyzeStmt(ArkScript::Ast::StatementNode& stmts);
+            void AnalyzeBlockScope(ArkScript::Ast::BlockScopeNode& body, const BlockScopeContext& ctx);
+            void AnalyzeStmt(ArkScript::Ast::StatementNode& stmts, const BlockScopeContext& ctx);
             void AnalyzeVarDecl(ArkScript::Ast::VarDeclNode& const_decl);
             void AnalyzeExpression(ArkScript::Ast::ExpressionNode& expr, const ArkScript::ExprContext& ctx);
+            const ArkScript::Symbol& AnalyzeFunCall(ArkScript::Ast::FunCallNode& fun_call);
+            void AnalyzeAssignStmt(ArkScript::Ast::AssignStmtNode& expr);
 
         // # Auxiliar functions
         private:

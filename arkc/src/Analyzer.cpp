@@ -67,7 +67,7 @@ void ArkScript::Analyzer::MakeHoisting()
 
                 ArkScript::Symbol sym;
                 sym.name = local_stmt->name;
-                sym.kind = ArkScript::SymbolKind::VARIABLE;
+                sym.kind = ArkScript::SymbolKind::CONSTANT;
                 sym.is_public = local_stmt->is_public;
                 sym.is_readonly = true;
                 sym.type = local_stmt->type;
@@ -110,9 +110,11 @@ void ArkScript::Analyzer::FullAnalyze()
 
             case ArkScript::Ast::NodeType::READONLY_DECL:
             {
-                // auto* const_node = static_cast<ArkScript::Ast::ReadonlyDeclNode*>(stmt.get());
-                // TODO: Validar a expressão de inicialização do valor constante
-                // this->AnalyzeExpression(*const_node->value_expr);
+                auto* const_node = static_cast<ArkScript::Ast::ReadonlyDeclNode*>(stmt.get());
+                auto ctx = ExprContext();
+                ctx.expected_type = const_node->type;
+                ctx.is_const_eval = true;
+                this->AnalyzeExpression(*const_node->initializer, ctx);
             }
             break;
             
@@ -142,24 +144,27 @@ void ArkScript::Analyzer::AnalyzeFunction(ArkScript::Ast::FunDeclNode& fun_decl)
         }
     }
 
-    this->AnalyzeBlockScope(*fun_decl.body);
+    auto ctx = ArkScript::BlockScopeContext();
+    ctx.expected_type = fun_decl.return_type;
+    ctx.kind = ArkScript::SymbolKind::FUNCTION;
+    this->AnalyzeBlockScope(*fun_decl.body, ctx);
 
     this->symbol_table->PopScope();
 }
 
-void ArkScript::Analyzer::AnalyzeBlockScope(ArkScript::Ast::BlockScopeNode& body)
+void ArkScript::Analyzer::AnalyzeBlockScope(ArkScript::Ast::BlockScopeNode& body, const BlockScopeContext& ctx)
 {
     this->symbol_table->PushScope();
 
     for(const auto& stmt : body.stmts)
     {
-        this->AnalyzeStmt(*stmt);
+        this->AnalyzeStmt(*stmt, ctx);
     }
 
     this->symbol_table->PopScope();
 }
 
-void ArkScript::Analyzer::AnalyzeStmt(ArkScript::Ast::StatementNode& stmt)
+void ArkScript::Analyzer::AnalyzeStmt(ArkScript::Ast::StatementNode& stmt, const BlockScopeContext& ctx)
 {
     switch(stmt.type)
     {
@@ -172,19 +177,30 @@ void ArkScript::Analyzer::AnalyzeStmt(ArkScript::Ast::StatementNode& stmt)
 
         case ArkScript::Ast::NodeType::CALL_STMT:
         {
-            // TODO
+            auto* call_node = static_cast<ArkScript::Ast::CallStmtNode*>(&stmt);
+            this->AnalyzeFunCall(*call_node->call);
         }
         break;
 
         case ArkScript::Ast::NodeType::ASSIGN_STMT:
         {
-            // TODO
+            auto* assign_stmt = static_cast<ArkScript::Ast::AssignStmtNode*>(&stmt);
+            this->AnalyzeAssignStmt(*assign_stmt);
         }
         break;
 
         case ArkScript::Ast::NodeType::RETURN_STMT:
         {
-            // TODO
+            auto expr_ctx = ArkScript::ExprContext();
+            expr_ctx.expected_type = ctx.expected_type;
+            auto* return_stmt = static_cast<ArkScript::Ast::ReturnStmtNode*>(&stmt);
+            this->AnalyzeExpression(*return_stmt->expression, expr_ctx);
+        }
+        break;
+
+        default:
+        {
+            this->ThrowError(stmt.GetLocation(), "Internal error: unhandled statement node type.");
         }
         break;
     }
@@ -236,18 +252,37 @@ void ArkScript::Analyzer::AnalyzeExpression(ArkScript::Ast::ExpressionNode& expr
             }
 
             auto* call_node = static_cast<ArkScript::Ast::FunCallNode*>(&expr);
-            //TODO: this->AnalyzeCallExpr(*call_node, ctx);
+            auto fun_sym = this->AnalyzeFunCall(*call_node);
+
+            expr.InferredType = fun_sym.type;
+            if (!ctx.expected_type.empty() && expr.InferredType != ctx.expected_type)
+            {
+                this->ThrowError(expr.GetLocation(), 
+                    "function '" + call_node->name + 
+                    "' returns '" + expr.InferredType + "', but expected '" + ctx.expected_type + "'.");
+            }
         }
         break;
 
-        case ArkScript::Ast::NodeType::BINARY_EXPR:
+        case ArkScript::Ast::NodeType::BIN_OP:
         {
             auto* bin_node = static_cast<ArkScript::Ast::BinaryOpNode*>(&expr);
-            
-            this->AnalyzeExpression(*bin_node->left, ctx);
-            this->AnalyzeExpression(*bin_node->right, ctx);
+            auto sub_ctx = ctx;
 
-            // TODO: Aqui você também pode checar se ctx.expected_type bate com o resultado do operador!
+            bool is_comparison = (bin_node->op == ArkScript::OP_COMPARISON::EQ   || 
+                                  bin_node->op == ArkScript::OP_COMPARISON::DIFF || 
+                                  bin_node->op == ArkScript::OP_COMPARISON::LT   || 
+                                  bin_node->op == ArkScript::OP_COMPARISON::GT   || 
+                                  bin_node->op == ArkScript::OP_COMPARISON::LTEQ || 
+                                  bin_node->op == ArkScript::OP_COMPARISON::GTEQ );
+
+            if(is_comparison)
+            {
+                sub_ctx.expected_type = "";
+            }
+
+            this->AnalyzeExpression(*bin_node->left, sub_ctx);
+            this->AnalyzeExpression(*bin_node->right, sub_ctx);
         }
         break;
 
@@ -257,7 +292,22 @@ void ArkScript::Analyzer::AnalyzeExpression(ArkScript::Ast::ExpressionNode& expr
         case ArkScript::Ast::NodeType::LITERAL_INT:
         case ArkScript::Ast::NodeType::LITERAL_STRING:
         {
-            if (!ctx.expected_type.empty())
+            std::string natural_type = "";
+            switch (expr.type)
+            {
+                case ArkScript::Ast::NodeType::LITERAL_BOOL:   natural_type = ArkScript::KEYWORDS::TBOOL; break;
+                case ArkScript::Ast::NodeType::LITERAL_CHAR:   natural_type = ArkScript::KEYWORDS::TCHAR; break;
+                case ArkScript::Ast::NodeType::LITERAL_STRING: natural_type = ArkScript::KEYWORDS::TSTR;  break;
+                case ArkScript::Ast::NodeType::LITERAL_INT:    natural_type = ArkScript::KEYWORDS::TI32;  break; // Padrão i32 para inteiros
+                case ArkScript::Ast::NodeType::LITERAL_FLOAT:  natural_type = ArkScript::KEYWORDS::TF32;  break; // Padrão f32 para floats
+                default: break;
+            }
+
+            if(ctx.expected_type.empty())
+            {
+                expr.InferredType = natural_type;
+            }
+            else 
             {
                 bool is_compatible = false;
                 std::string actual_type = "";
@@ -265,35 +315,45 @@ void ArkScript::Analyzer::AnalyzeExpression(ArkScript::Ast::ExpressionNode& expr
                 switch (expr.type)
                 {
                     case ArkScript::Ast::NodeType::LITERAL_BOOL:
+                    {
                         actual_type = ArkScript::KEYWORDS::TBOOL;
                         is_compatible = (ctx.expected_type == ArkScript::KEYWORDS::TBOOL);
-                        break;
+                    }
+                    break;
 
                     case ArkScript::Ast::NodeType::LITERAL_CHAR:
+                    {
                         actual_type = ArkScript::KEYWORDS::TCHAR;
                         is_compatible = (ctx.expected_type == ArkScript::KEYWORDS::TCHAR);
-                        break;
+                    }
+                    break;
 
                     case ArkScript::Ast::NodeType::LITERAL_STRING:
+                    {
+
                         actual_type = ArkScript::KEYWORDS::TSTR;
                         is_compatible = (ctx.expected_type == ArkScript::KEYWORDS::TSTR);
-                        break;
+                    }
+                    break;
 
                     case ArkScript::Ast::NodeType::LITERAL_INT:
+                    {
                         actual_type = "integer";
                         is_compatible = (ctx.expected_type == ArkScript::KEYWORDS::TI8   || ctx.expected_type == ArkScript::KEYWORDS::TI16  ||
                                          ctx.expected_type == ArkScript::KEYWORDS::TI32  || ctx.expected_type == ArkScript::KEYWORDS::TI64  ||
                                          ctx.expected_type == ArkScript::KEYWORDS::TUI8  || ctx.expected_type == ArkScript::KEYWORDS::TUI16 ||
                                          ctx.expected_type == ArkScript::KEYWORDS::TUI32 || ctx.expected_type == ArkScript::KEYWORDS::TUI64 );
-                        break;
+                    }
+                    break;
 
                     case ArkScript::Ast::NodeType::LITERAL_FLOAT:
+                    {
                         actual_type = "float";
                         is_compatible = (ctx.expected_type == ArkScript::KEYWORDS::TF32 || ctx.expected_type == ArkScript::KEYWORDS::TF64);
-                        break;
+                    }
+                    break;
 
-                    default:
-                        break;
+                    default: break;
                 }
 
                 if (!is_compatible)
@@ -329,5 +389,68 @@ void ArkScript::Analyzer::AnalyzeExpression(ArkScript::Ast::ExpressionNode& expr
             }
         }
         break;
+
+        default:
+        {
+            this->ThrowError(expr.GetLocation(), "Internal error: unhandled expression node type.");
+        }
+        break;
     }
 }
+
+const ArkScript::Symbol& ArkScript::Analyzer::AnalyzeFunCall(ArkScript::Ast::FunCallNode& fun_call)
+{
+    const auto* func_sym = this->symbol_table->Search(fun_call.name);
+    if (!func_sym)
+    {
+        this->ThrowError(fun_call.GetLocation(), "Undeclared function '" + fun_call.name + "'.");
+    }
+
+    if (func_sym->kind != ArkScript::SymbolKind::FUNCTION)
+    {
+        this->ThrowError(fun_call.GetLocation(), "'" + fun_call.name + "' is not a function.");
+    }
+
+    size_t fun_call_arguments_amount = fun_call.arg_list->arguments.size();
+    if (fun_call_arguments_amount != func_sym->args.size())
+    {
+        this->ThrowError(fun_call.GetLocation(), 
+            "Function '" + fun_call.name + "' expects " + 
+            std::to_string(func_sym->args.size()) + " argument(s), but " + 
+            std::to_string(fun_call_arguments_amount) + " were provided.");
+    }
+
+    for (size_t i = 0; i < fun_call_arguments_amount; ++i)
+    {
+        auto arg_ctx = ArkScript::ExprContext();
+        arg_ctx.expected_type = func_sym->args[i];
+        arg_ctx.is_const_eval = false;
+
+        this->AnalyzeExpression(*fun_call.arg_list->arguments[i], arg_ctx);
+    }
+
+    return *func_sym;
+}
+
+void ArkScript::Analyzer::AnalyzeAssignStmt(ArkScript::Ast::AssignStmtNode& stmt)
+{
+    auto assign_sym = this->symbol_table->Search(stmt.name);
+
+    if(!assign_sym)
+    {
+        this->ThrowError(stmt.GetLocation(), "Undeclared identifier '" + stmt.name + "'.");
+    }
+    
+    if(assign_sym->kind != ArkScript::SymbolKind::VARIABLE)
+    {
+        this->ThrowError(stmt.GetLocation(), "Only variables can receive new values.");
+    }
+
+    auto ctx = ArkScript::ExprContext();
+    ctx.expected_type = assign_sym->type;
+    ctx.is_const_eval = false;
+
+    this->AnalyzeExpression(*stmt.expression, ctx);
+}
+
+

@@ -308,7 +308,7 @@ std::unique_ptr<ArkScript::Ast::FunCallNode> ArkScript::Parser::ParseFunCall()
 
     if(this->tokens->Peek().content != ArkScript::DELIMITER::RPARAN)
     {
-        fun_call->argument = this->ParseArgumentList();
+        fun_call->arg_list = this->ParseArgumentList();
     }
 
     this->ExpectTokenContent(ArkScript::DELIMITER::RPARAN, "Expected ')' to close argument list.");
@@ -414,7 +414,7 @@ std::unique_ptr<ArkScript::Ast::ExpressionNode> ArkScript::Parser::ParseInfixExp
 {
     auto op_token = this->tokens->Consume(); // Consume +, -, *, /
     
-    auto binary_node = std::make_unique<ArkScript::Ast::BinaryExprNode>(op_token);
+    auto binary_node = std::make_unique<ArkScript::Ast::BinaryOpNode>(op_token);
     binary_node->op = op_token.content;
     binary_node->left = std::move(left);
 
