@@ -1,0 +1,72 @@
+/*
+ * Copyright 2026 ArkScript Authors
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Module scope name
+module <name>
+
+// readonly data declaration: 
+// <name> = name of data
+// <type> = data type
+// <visibility> = public or private
+rdata <name> <type> <visibility> := 
+    <expression>
+    store <type-stack> <name>
+
+// Function declaration:  
+// <name> = name of function
+// <type> = function return type
+// <visibility> = public or private
+func <name> <type> <visibility> :=
+    <parameter> // List of function parameters
+    (<stmt>)* // List of function statements
+
+<parameter> :=
+    <dcl_param>*
+    <dcl_param_load>*
+
+<dcl_param> := param <name> <type>
+<dcl_param_load> := load <type-stack> <name>
+
+<expression> := <expr>*
+
+<expr> :=
+    push <type-stack> <literal-value> // Push literal-value into specific stack
+    | conv <type-stack> <type-stack> // Pop the top value from source stack, convert, and insert into destination stack
+    | pop <type-stack> (literal-int)? // Remove value from specific stack. Optional: integer defines total values to delete
+    | add <type-stack> <literal-int> // Pop values from specified stack based on literal-int and apply add operation
+    | sub <type-stack> <literal-int> // Pop values from specified stack based on literal-int and apply sub operation
+    | div <type-stack> <literal-int> // Pop values from specified stack based on literal-int and apply div operation
+    | mul <type-stack> <literal-int> // Pop values from specified stack based on literal-int and apply mul operation
+    | load <type-stack> <name> // Load variable/constant value into stack
+
+<stmt> :=
+    dcl_var <name> <type> ( <expression> ) // Variable declaration
+    | dcl_const <name> <type> ( <expression> ) // Constant declaration
+    | assign <name> <expression> // Assignment operation
+    | callfunc <name> <count> // Call function. Count is amount register in stack is property of function call.
+    | ret <expression> // Return point
+    | store <type-stack> <name> // Store the top value of the specific stack in defined name  
+
+<literal-value> :=
+    <literal-float> // Literal float values
+    | <literal-integer> // Literal integer values
+    | <literal-string> // Literal string values
+    | <literal-char> // Literal character values
+
+<type-stack> :=
+    f // Define to use float-stack
+    | i // Define to use int-stack
+    | s // Define to use string-stack
