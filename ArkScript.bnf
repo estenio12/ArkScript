@@ -1,16 +1,16 @@
 <identifier>     = [a-zA-Z_][a-zA-Z0-9_]*
 <literal-int>    = [0-9]+
 <literal-float>  = [0-9]+ "." [0-9]+
-<literal-char>   = "'" [^\'"'] "'"
 <literal-string> = '"' [^'"'\\]* '"'
 <literal-bool>   = "true" | "false"
+<literal-text>   = "`" [^\'`']* "`"
 
-<type-native>    = "i8" | "i16" | "i32" | "i64" | "ui8" | "ui16" | "ui32" | "ui64" | "f32" | "f64" | "str" | "bool" | "char"
+<type-native>    = "int" |  "float" | "string" | "bool"
 <type-void>      = "void"
 
 <program>        = <module-decl> <module-stmt>*
 <module-decl>    = "module" <identifier> ( "::" <identifier> )* ";"
-<module-stmt>    = [ "pub" ] (<readonly-decl> | <fun-decl>)
+<module-stmt>    = [ "pub" ] (<readonly-decl> | <fun-decl> | <struct-decl>)
 
 <block>          = ":" <statement>* "end"
 <statement>      = <const-decl> | <var-decl> | <assign-stmt> | <call-stmt> | <return-stmt>
@@ -21,8 +21,8 @@
 <const-decl>     = "const" <identifier> ":" <type-native> "=" <expression> ";"
 <var-decl>       = "var" <identifier> ":" <type-native> ["=" <expression>] ";"
 
-<fun-decl>       = "fun" <identifier> "(" [ <parameter-list> ] ")" "->" ( <type-native> | <type-void> ) <block>
-<fun-call>       = <identifier> "(" [ <arg-list> ] ")"
+<fun-decl>       = "fun" ["(" <identifier> ":" <struct-identifier> ")"] <identifier> "(" [ <parameter-list> ] ")" "->" ( <type-native> | <type-void> ) <block>
+<fun-call>       = [<struct-identifier> "::"] <identifier> "(" [ <arg-list> ] ")"
 <arg-list>       = <expression> ( "," <expression> )*
 
 <parameter>      = <identifier> ":" <type-native>
@@ -38,7 +38,16 @@
                    | <literal-float>
                    | <literal-string>
                    | <literal-bool>
-                   | <literal-char>
                    | "(" <expression> ")"
 
 <infix-op>       = "+" | "-" | "*" | "/"
+
+<struct-decl>    = ["pub"] "struct" <identifier> (":" <struct-inherit>) <struct-block>
+<struct-identifier> = <identifier>
+<struct-inherit> = ["!"] <struct-identifier> ("," <struct-inherit>)*
+<struct-block>   = ":" <struct-stmt>* "end"
+<struct-stmt>    = <struct-property-decl>*
+<struct-property-decl> = <identifier> ":" <type-native> ("=" (<identifier> | <literal-int> | <literal-float> | <literal-string> | <literal-bool> | <literal-text>)) ";"
+
+<module-import>  = "use" <identifier> ("::" <identifier>)*
+

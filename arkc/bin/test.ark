@@ -7,3 +7,14 @@ end
 pub fun main() -> void:
     var t = sun(10, 20);
 end
+
+
+pub struct Person:
+    age: int = 30;
+end
+
+fun (p: Person) GetAge() -> int:
+    return p::age;
+end
+
+Person::GetAge();
