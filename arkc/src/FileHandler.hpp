@@ -30,6 +30,7 @@ namespace ArkScript
     {
         public:
             static std::shared_ptr<FileDescriptor> GetFileContent(const std::string& path);
+            static void WriteJSSafeFile(const std::string& file_name, const std::string& JSSafe);
             
         private:
             static std::string PathResolver(const std::string& path);

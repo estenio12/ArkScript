@@ -66,7 +66,7 @@ namespace ArkScript::Args
                 if (cmd.length() > 0 && cmd[0] != '-') 
                 {
                     if (ArkScript::Global::SOURCE_FILE.empty()) 
-                        ArkScript::Global::SOURCE_FILE = std::string(cmd);
+                        ArkScript::Global::SOURCE_FILE = args[i];
                     else 
                         ArkScript::Output::ThrowFatalError("CompilerArguments", "Multiple source files detected or invalid argument: " + std::string(cmd));
                 }

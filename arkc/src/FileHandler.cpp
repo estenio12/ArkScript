@@ -60,4 +60,8 @@ std::string ArkScript::FileHandler::PathResolver(const std::string& path)
     }
 }
 
-
+void ArkScript::FileHandler::WriteJSSafeFile(const std::string& file_name, const std::string& JSSafe)
+{
+    std::ofstream file(file_name);
+    if (file) file << JSSafe;
+}

@@ -16,7 +16,6 @@
 #pragma once
 #include <cstdint>
 #include <memory>
-#include <unordered_set>
 #include "FileHandler.hpp"
 #include "TokenManager.hpp"
 
