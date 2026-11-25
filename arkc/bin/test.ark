@@ -1,20 +1,43 @@
+module System;
+
+    extern fun "console.log($1)" print(value: any) -> void;
+
+    pub struct Opt<T>:
+        __valid: bool;
+        __content: T;
+    end
+
+    pub fun (opt: Opt<T>) isValid() -> bool:
+        return opt::__valid;
+    end
+
+    pub fun (opt: Opt<T>) getContent() -> T:
+        return opt::__content;
+    end
+end
+
+module person;
+
+    pub struct Person:
+        name: string;
+        age: int;
+    end
+
+    fun (p: Person) age() -> int:
+        return p::age;
+    end
+
+end
+
 module main;
 
-pub fun sum(n1: i32, n2: i32) -> void:
-    return n1 + n2;
+    use sys = System;
+    using person = Person;
+
+    pub fun main() -> void:
+        var p = person{};
+        var age = str(p::GetAge());
+        sys::print(p::GetAge());
+    end
+
 end
-
-pub fun main() -> void:
-    var t = sun(10, 20);
-end
-
-
-pub struct Person:
-    age: int = 30;
-end
-
-fun (p: Person) GetAge() -> int:
-    return p::age;
-end
-
-Person::GetAge();
